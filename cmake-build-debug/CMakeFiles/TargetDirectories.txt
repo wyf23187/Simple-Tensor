@@ -1,0 +1,3 @@
+C:/Users/mix/Documents/Learn/Program/project/cmake-build-debug/CMakeFiles/tensor.dir
+C:/Users/mix/Documents/Learn/Program/project/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/mix/Documents/Learn/Program/project/cmake-build-debug/CMakeFiles/rebuild_cache.dir
