@@ -1,4 +1,10 @@
 # ninja log v5
-0	761	7037629073989905	CMakeFiles/tensor.dir/main.cpp.obj	ab1cab5dd7410da2
-1	1385	7037779973862270	CMakeFiles/tensor.dir/src/tensor.cpp.obj	deafe89006aac701
-1386	2102	7037779980357293	tensor.exe	474e3b35c8984870
+12	1261	7037836653495225	CMakeFiles/tensor.dir/main.cpp.obj	ab1cab5dd7410da2
+2	276	7040142585213738	build.ninja	230904455262a34e
+1262	1601	7037836656315309	tensor.exe	8acaf266ee38acef
+6	104	7040145180887589	CMakeFiles/tensor.dir/src/tensor.cpp.obj	6aa5556872b007b9
+0	493	7040145184793251	CMakeFiles/tensor.dir/main.cpp.obj	a585cb3e51018fad
+11	704	7040145186878515	CMakeFiles/tensor.dir/src/Storage.cpp.obj	ad7bee7bbee3e065
+16	749	7040145187349522	CMakeFiles/tensor.dir/src/allocator.cpp.obj	88b321c405422a50
+22	876	7040145188620531	CMakeFiles/tensor.dir/src/Shape.cpp.obj	1ed05ab163c86cf6
+877	1008	7040145189888624	tensor.exe	27dfa884e793d714

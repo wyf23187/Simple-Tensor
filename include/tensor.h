@@ -1,40 +1,15 @@
-#ifndef TENSOR
-#define TENSOR
+//
+// Created by mix on 2023/4/24.
+//
 
-#include <iostream>
-#include <vector>
-#include <initializer_list>
+#ifndef TENSOR_TENSOR_H
+#define TENSOR_TENSOR_H
 
 namespace SimpleTensor {
 
-class Tensor {
-  public:
-    // constructor
-    Tensor();
-    Tensor(std::initializer_list<int> dim_list);
-    Tensor(double *arr, std::initializer_list<int> dim_list);
+    class Tensor {
+    };
 
-    // static method
-    static Tensor randn(std::initializer_list<int> dim_list);
-    static Tensor zeros(std::initializer_list<int> dim_list);
+} // SimpleTensor
 
-    // operator
-    double &at(int idx, ...);
-    double &item(int index);
-    friend std::ostream &operator<<(std::ostream &out, Tensor t);
-    friend Tensor operator+(const Tensor &A, const Tensor &B);
-    friend Tensor operator*(const Tensor &A, double c);
-    friend Tensor operator*(const Tensor &A, const Tensor &B);
-
-  private:
-    std::vector<int> dim;
-    std::vector<double> value;
-    int total_element;
-    int ndim;
-    void print(std::ostream &out, int i_dim, int idx);
-};
-
-
-}
-
-#endif
+#endif //TENSOR_TENSOR_H
