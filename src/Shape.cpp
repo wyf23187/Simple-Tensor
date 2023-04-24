@@ -4,7 +4,7 @@
 
 namespace SimpleTensor {
     Shape::Shape(std::initializer_list<index_t> dim) : _dim(dim) {}
-    Shape::Shape(const Shape &other, index_t skip) : _dim(other.n_dim()-1) {
+    Shape::Shape(const Shape& other, index_t skip) : _dim(other.n_dim()-1) {
         // skip the [skip] element
         int idx = 0;
         while (idx < skip) {
@@ -17,7 +17,7 @@ namespace SimpleTensor {
         }
     }
     Shape::Shape(index_t *dim, index_t n_dim) : _dim(dim, n_dim) {}
-    Shape::Shape(Array<index_t> &&dim) : _dim(std::move(dim)) {}
+    Shape::Shape(Array<index_t>&& dim) : _dim(std::move(dim)) {}
 
     index_t Shape::d_size() const {
         int size = 1;
@@ -48,7 +48,7 @@ namespace SimpleTensor {
         return true;
     }
 
-    std::ostream &operator<<(std::ostream &out, const Shape &sh) {
+    std::ostream& operator<<(std::ostream &out, const Shape &sh) {
         out << "(" << sh[0];
         for (int i = 1; i < sh.n_dim(); ++i)
             out << ", " << sh[i];

@@ -15,7 +15,7 @@ namespace SimpleTensor {
         class trivial_delete_handler {
         public:
             explicit trivial_delete_handler(index_t size_): size(size_) {}
-            void operator()(void *ptr) { deallocate(ptr, size); }
+            void operator()(void* ptr) { deallocate(ptr, size); }
         private:
             index_t size;
         };
@@ -23,7 +23,7 @@ namespace SimpleTensor {
         template<typename T>
         class nontrivial_delete_handler {
         public:
-            void operator()(void *ptr) {
+            void operator()(void* ptr) {
                 static_cast<T*>(ptr)->~T();
                 deallocate(ptr, sizeof(T));
             }
@@ -67,10 +67,10 @@ namespace SimpleTensor {
     private:
         Alloc() = default;
         ~Alloc() {
-            for (auto & iter : cache_)
+            for (auto& iter : cache_)
                 iter.second.release();
         }
-        static Alloc &self();
+        static Alloc& self();
 
         static void* allocate(index_t size);
         static void deallocate(void* ptr, index_t size);
@@ -79,7 +79,7 @@ namespace SimpleTensor {
         static index_t deallocate_memory_size;
 
         struct free_deleter {
-            void operator()(void *ptr) { std::free(ptr); }
+            void operator()(void* ptr) { std::free(ptr); }
         };
         std::multimap<index_t, std::unique_ptr<void, free_deleter>> cache_;
     };

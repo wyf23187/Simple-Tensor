@@ -5,14 +5,14 @@
 namespace SimpleTensor {
     index_t Alloc::allocate_memory_size = 0;
     index_t Alloc::deallocate_memory_size = 0;
-    Alloc &Alloc::self() {
+    Alloc& Alloc::self() {
         static Alloc alloc;
         return alloc;
     }
 
-    void *Alloc::allocate(index_t size) {
+    void* Alloc::allocate(index_t size) {
         auto iter = self().cache_.find(size);
-        void *res;
+        void* res;
         if (iter != self().cache_.end()) {
             res = iter->second.release();
             self().cache_.erase(iter);
@@ -26,7 +26,7 @@ namespace SimpleTensor {
         return res;
     }
 
-    void Alloc::deallocate(void *ptr, index_t size) {
+    void Alloc::deallocate(void* ptr, index_t size) {
         deallocate_memory_size -= size;
         self().cache_.emplace(size, ptr);
     }

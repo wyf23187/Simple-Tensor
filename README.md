@@ -10,15 +10,7 @@ Tensor 可以理解为可变维数的数组，可以根据用户所需要的维�
 
 为了方便存储数据，我们将所有高维数据压平到一维去存储，并辅助一个每一个维度大小的数组。
 
-```cpp
-class baseTensor {
-  private:
-    std::vector<int> dim;
-    std::vector<double> value;
-    int total_elements;                 // value.size()
-    int ndim;                           // dim.size()
-}
-```
+
 
 ### Tensor 的运算
 

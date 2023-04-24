@@ -38,7 +38,7 @@ namespace SimpleTensor {
 
         ~Array() = default;
 
-        DType &operator[](index_t idx) { return d_ptr.get()[idx]; }
+        DType& operator[](index_t idx) { return d_ptr.get()[idx]; }
         DType operator[](index_t idx) const { return d_ptr.get()[idx]; }
 
         int size() const { return this->size_; }

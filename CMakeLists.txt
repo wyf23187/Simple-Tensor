@@ -6,4 +6,4 @@ add_executable(tensor
         src/tensor.cpp include/tensor.h
         src/Storage.cpp include/Storage.h
         src/Shape.cpp include/Shape.h
-        src/allocator.cpp)
+        src/allocator.cpp src/tensor_impl.cpp include/tensor_impl.h)
