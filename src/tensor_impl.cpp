@@ -73,7 +73,12 @@ namespace SimpleTensor {
     Alloc::NonTrivalUniquePtr<TensorImpl>
     TensorImpl::slice(index_t idx, index_t dim) const {
         Alloc::NonTrivalUniquePtr<TensorImpl> ptr;
-//        ptr = Alloc::unique_construct<TensorImpl>();
+        ptr = Alloc::unique_construct<TensorImpl>(
+                Storage(_storage, offset()+_stride[dim]*idx),
+                _shape, _stride);
+        ptr->_shape[dim] = 1;
+        ptr->_stride[dim] = 0;
+        return ptr;
     }
 
     Alloc::NonTrivalUniquePtr<TensorImpl>
@@ -96,6 +101,19 @@ namespace SimpleTensor {
         return ptr;
     }
 
+    Alloc::NonTrivalUniquePtr<TensorImpl>
+    TensorImpl::permute(std::initializer_list<index_t> dims) const {
+        Alloc::NonTrivalUniquePtr<TensorImpl> ptr;
+        ptr = Alloc::unique_construct<TensorImpl>(_storage, _shape);
+        int idx = 0;
+        for (auto n_permute : dims) {
+            ptr->_shape[idx] = _shape[n_permute];
+            ptr->_stride[idx] = _stride[n_permute];
+            ++idx;
+        }
+        return ptr;
+    }
+
     // friend function
     std::ostream& operator<<(std::ostream& out, const TensorImpl& tensor) {
         int max_width = 0;
@@ -105,27 +123,36 @@ namespace SimpleTensor {
             if (tensor.item(i) < 0) ++dig;
             max_width = std::max(max_width, dig);
         }
-//        while (1) {
-//            for (int j = tensor.n_dim()-1; j >= 0; --j) {
-//
-//            }
-//        }
-        for (int i = 0; i < tensor.d_size(); ++i) {
-            int cnt_pre = (i%tensor.d_size() == 0);
-            int cnt_suf = (i%tensor.d_size() == tensor.d_size()-1);
-            for (int dim = 0; dim < tensor.n_dim()-1; ++dim) {
-                if (i%tensor._stride[dim] == 0) ++cnt_pre;
-            }
-            for (int dim = 0; dim < tensor.n_dim()-1; ++dim) {
-                if (i%tensor._stride[dim] == tensor._stride[dim]-1) ++cnt_suf;
-            }
-            for (int j = 0; j < tensor.n_dim()-cnt_pre; ++j) out << ' ';
-            for (int j = 0; j < cnt_pre; ++j) out << '[';
+        int cnt = 0, idx = 0, end_flag = tensor.n_dim();
+        std::vector<int> dim_cnt(tensor.n_dim());
+        while (cnt < tensor.d_size()) {
+            for (int i = 0; i < tensor.n_dim()-end_flag; ++i)
+                out << " ";
+            for (int i = 0; i < end_flag; ++i)
+                out << "[";
             out << std::setw(max_width+4+1) << std::right << std::setprecision(4) << std::fixed;
-            out << tensor.item(i);
-            if (cnt_suf == 0) out << ", ";
-            for (int j = 0; j < cnt_suf; ++j) out << ']';
-            if (cnt_suf != 0) out << std::endl;
+            out << tensor.item(idx);
+            end_flag = 0;
+            for (int i = (int)tensor.n_dim()-1; i >= 0; --i) {
+                if (dim_cnt[i]+1 < tensor.size()[i]) {
+                    idx += tensor.stride()[i];
+                    ++dim_cnt[i];
+                    break;
+                } else {
+                    idx -= ((int)tensor.size()[i]-1)*tensor.stride()[i];
+                    dim_cnt[i] = 0;
+                    ++end_flag;
+                }
+            }
+            if (end_flag == 0) out << ", ";
+            else {
+                for (int i = 0; i < end_flag; ++i) {
+                    out << "]";
+                }
+                out << std::endl;
+
+            }
+            ++cnt;
         }
         return out;
     }
