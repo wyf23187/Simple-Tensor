@@ -1,4 +1,4 @@
-#include "../include/allocator.h"
+#include "allocator.h"
 #include <memory>
 #include <cstdlib>
 

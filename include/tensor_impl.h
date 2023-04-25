@@ -46,6 +46,7 @@ namespace SimpleTensor {
         // friend function
         friend std::ostream& operator<<(std::ostream& out, const TensorImpl& tensor);
 
+
     protected:
         Storage _storage;
         Shape _shape;

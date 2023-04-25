@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(tensor)
+project(Tensor_)
 include_directories(include/)
 add_executable(tensor
         main.cpp
