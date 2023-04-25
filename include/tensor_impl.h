@@ -23,6 +23,7 @@ namespace SimpleTensor {
 
         // inline function
         index_t n_dim() const { return _shape.n_dim(); }
+        index_t d_size() const { return  _shape.d_size(); }
         index_t size(index_t idx) const { return _shape[idx]; }
         const Shape& size() const { return _shape; }
         index_t offset() const { return _storage.offset(); }
@@ -34,6 +35,7 @@ namespace SimpleTensor {
         data_t& operator[](std::initializer_list<index_t> dims); // use initializer list to access/modify the data.
         data_t operator[](std::initializer_list<index_t> dims) const;
         data_t item() const;
+        data_t item(const int idx) const;
 
         Alloc::NonTrivalUniquePtr<TensorImpl> slice(index_t idx, index_t dim = 0) const;
         Alloc::NonTrivalUniquePtr<TensorImpl> slice(index_t start_idx, index_t end_idx, index_t dim) const;
