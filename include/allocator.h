@@ -8,7 +8,7 @@
 #include <memory>
 #include <iostream>
 
-namespace SimpleTensor {
+namespace st {
     typedef unsigned int index_t;
     class Alloc {
     public:

@@ -3,7 +3,7 @@
 
 #include "allocator.h"
 
-namespace SimpleTensor {
+namespace st {
     typedef double data_t;
     class Storage {
     public:
@@ -12,8 +12,8 @@ namespace SimpleTensor {
         Storage(index_t size, data_t value);
         Storage(const data_t *data, index_t size);
 
-        explicit Storage(const Storage& other) = default; // can't use copy constructor
-        explicit Storage(Storage&& other) = default; // can't use move constructor
+        explicit Storage(const Storage& other) = default;
+        explicit Storage(Storage&& other) = default;
 
         ~Storage() = default;
 
@@ -21,7 +21,7 @@ namespace SimpleTensor {
 
         data_t operator[](index_t idx) const { return f_ptr[idx]; }
         data_t& operator[](index_t idx) { return f_ptr[idx]; }
-        index_t offset() const { return f_ptr - b_ptr->data_; }
+        [[nodiscard]] index_t offset() const { return f_ptr - b_ptr->data_; }
         // index_t version() const { return b_ptr->version; }
         // void increment_version() { ++b_ptr->version; }
         index_t size_;

@@ -4,7 +4,7 @@
 #include <cmath>
 #include <iomanip>
 
-namespace SimpleTensor {
+namespace st {
     // constructor
     TensorImpl::TensorImpl(const Storage& storage, const Shape& shape, const IndexArray& stride) :
         _storage(storage), _shape(shape), _stride(stride) {}
@@ -74,10 +74,20 @@ namespace SimpleTensor {
     TensorImpl::slice(index_t idx, index_t dim) const {
         Alloc::NonTrivalUniquePtr<TensorImpl> ptr;
         ptr = Alloc::unique_construct<TensorImpl>(
-                Storage(_storage, offset()+_stride[dim]*idx),
+                Storage(_storage, offset() + _stride[dim] * idx),
                 _shape, _stride);
         ptr->_shape[dim] = 1;
         ptr->_stride[dim] = 0;
+        return ptr;
+    }
+
+    Alloc::NonTrivalUniquePtr<TensorImpl>
+    TensorImpl::slice(index_t start_idx, index_t end_idx, index_t dim) const {
+        Alloc::NonTrivalUniquePtr<TensorImpl> ptr;
+        ptr = Alloc::unique_construct<TensorImpl>(
+                Storage(_storage, offset() + start_idx * _stride[dim]),
+                _shape, _stride);
+        ptr->_shape[dim] = end_idx-start_idx;
         return ptr;
     }
 
@@ -99,6 +109,12 @@ namespace SimpleTensor {
             else ptr->_stride[i] = 1;
         }
         return ptr;
+    }
+
+    TensorImpl TensorImpl::self() const {
+        TensorImpl tensor(Storage(_storage.size_), _shape, _stride);
+
+        return tensor;
     }
 
     Alloc::NonTrivalUniquePtr<TensorImpl>

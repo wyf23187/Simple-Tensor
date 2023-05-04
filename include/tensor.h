@@ -1,11 +1,9 @@
-//
-// Created by mix on 2023/4/24.
-//
-
 #ifndef TENSOR_TENSOR_H
 #define TENSOR_TENSOR_H
+
 #include "tensor_impl.h"
-namespace SimpleTensor {
+
+namespace st {
 
     class Tensor
 	{

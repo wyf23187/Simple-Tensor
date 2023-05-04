@@ -1,10 +1,10 @@
-#include "Shape.h"
+#include "shape.h"
 
 #include <initializer_list>
 
-namespace SimpleTensor {
+namespace st {
     Shape::Shape(std::initializer_list<index_t> dim) : _dim(dim) {}
-    Shape::Shape(const Shape& other, index_t skip) : _dim(other.n_dim()-1) {
+    Shape::Shape(const Shape& other, index_t skip) : _dim(other.n_dim() - 1) {
         // skip the [skip] element
         int idx = 0;
         while (idx < skip) {

@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <iostream>
 
-namespace SimpleTensor {
+namespace st {
     // unique_ptr array
     template<typename DType>
     class Array {

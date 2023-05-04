@@ -2,7 +2,7 @@
 #include <memory>
 #include <cstdlib>
 
-namespace SimpleTensor {
+namespace st {
     index_t Alloc::allocate_memory_size = 0;
     index_t Alloc::deallocate_memory_size = 0;
     Alloc& Alloc::self() {

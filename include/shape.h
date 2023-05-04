@@ -6,13 +6,14 @@
 
 #include <initializer_list>
 
-namespace SimpleTensor {
+namespace st {
+    using IndexArray = Array<index_t>;
     class Shape {
     public:
         Shape(std::initializer_list<index_t> dim);
         Shape(const Shape& other, index_t skip);
         Shape(index_t* dim, index_t n_dim);
-        Shape(Array<index_t> &&dim);
+        Shape(IndexArray &&dim);
 
         Shape(const Shape &dim) = default;
         Shape(Shape &&dim) = default;
@@ -26,10 +27,10 @@ namespace SimpleTensor {
         index_t n_dim() const { return _dim.size(); }
         index_t& operator[](index_t idx) { return _dim[idx]; }
         index_t operator[](index_t idx) const { return _dim[idx]; }
-        operator const Array<index_t>() const { return this->_dim; }
+        operator const IndexArray() const { return this->_dim; }
         friend std::ostream &operator<<(std::ostream &out, const Shape &sh);
     private:
-        Array<index_t> _dim;
+        IndexArray _dim;
     };
 } // SimpleTensor
 
