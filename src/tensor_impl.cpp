@@ -66,8 +66,16 @@ namespace st {
         return _storage[0];
     }
 
-    data_t TensorImpl::item(const int idx) const {
-        return _storage[idx];
+    data_t TensorImpl::item(int idx) const {
+        return _storage[idx+offset()];
+    }
+
+    data_t TensorImpl::eval(IndexArray idx) const {
+        int index = 0;
+        for (int i = 0; i < n_dim(); ++i) {
+            index += idx[i]*_stride[i];
+        }
+        return item(index);
     }
 
     Alloc::NonTrivalUniquePtr<TensorImpl>
@@ -109,12 +117,6 @@ namespace st {
             else ptr->_stride[i] = 1;
         }
         return ptr;
-    }
-
-    TensorImpl TensorImpl::self() const {
-        TensorImpl tensor(Storage(_storage.size_), _shape, _stride);
-
-        return tensor;
     }
 
     Alloc::NonTrivalUniquePtr<TensorImpl>
@@ -171,6 +173,30 @@ namespace st {
             ++cnt;
         }
         return out;
+    }
+    template<typename Etype>
+    inline TensorImpl& TensorImpl::operator=(const Exp<Etype>& src_) {
+        const Etype& src = src_.self();
+        std::vector<index_t> dim_cnt;
+        for (int i = 0; i < n_dim(); ++i) dim_cnt.push_back(0);
+        int cnt = 0;
+        while (cnt < d_size()) {
+            for (int i = n_dim()-1; i >= 0; --i) {
+                if (dim_cnt[i] < size(i)) {
+                    dim_cnt[i]++;
+                    break;
+                } else {
+                    dim_cnt[i] = 0;
+                }
+            }
+            int idx = 0;
+            for (int i = 0; i < n_dim(); ++i) {
+                idx += dim_cnt[i] * _stride[i];
+            }
+            _storage[idx] = src.eval(dim_cnt);
+            ++cnt;
+        }
+        return *this;
     }
 
 } // SimpleTensor

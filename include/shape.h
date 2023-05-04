@@ -19,12 +19,12 @@ namespace st {
         Shape(Shape &&dim) = default;
         ~Shape() = default;
 
-        index_t d_size() const;
-        index_t sub_size(index_t start_dim, index_t end_dim) const;
-        index_t sub_size(index_t start_dim) const;
+        [[nodiscard]] index_t d_size() const;
+        [[nodiscard]] index_t sub_size(index_t start_dim, index_t end_dim) const;
+        [[nodiscard]] index_t sub_size(index_t start_dim) const;
         bool operator==(const Shape &other) const;
 
-        index_t n_dim() const { return _dim.size(); }
+        [[nodiscard]] index_t n_dim() const { return _dim.size(); }
         index_t& operator[](index_t idx) { return _dim[idx]; }
         index_t operator[](index_t idx) const { return _dim[idx]; }
         operator const IndexArray() const { return this->_dim; }

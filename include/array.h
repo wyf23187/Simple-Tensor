@@ -26,6 +26,13 @@ namespace st {
                 ++ptr;
             }
         }
+        Array(std::vector<DType> d_list) : Array(d_list.size()) {
+            auto ptr = d_ptr.get();
+            for (auto d : d_list) {
+                *ptr = d;
+                ++ptr;
+            }
+        }
         Array(const Array<DType> &other) :
             size_(other.size()), d_ptr(Alloc::unique_allocate<DType>(size_*sizeof(DType))){
             std::memcpy(this->d_ptr.get(), other.d_ptr.get(), size_*sizeof(DType));
