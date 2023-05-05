@@ -13,6 +13,7 @@ namespace st {
         for (int i = 0; i < shape.n_dim(); ++i) {
             if (i == shape.n_dim()-1) _stride[i] = 1;
             else _stride[i] = shape.sub_size(i+1);
+            if (shape[i] == 1) _stride[i] = 0;
         }
     }
     TensorImpl::TensorImpl(const Shape& shape) :
@@ -22,6 +23,7 @@ namespace st {
         for (int i = 0; i < shape.n_dim(); ++i) {
             if (i == shape.n_dim()-1) _stride[i] = 1;
             else _stride[i] = shape.sub_size(i+1);
+            if (shape[i] == 1) _stride[i] = 0;
         }
     }
     TensorImpl::TensorImpl(const data_t* data, const Shape& shape) :
@@ -31,6 +33,7 @@ namespace st {
         for (int i = 0; i < shape.n_dim(); ++i) {
             if (i == shape.n_dim()-1) _stride[i] = 1;
             else _stride[i] = shape.sub_size(i+1);
+            if (shape[i] == 1) _stride[i] = 0;
         }
     }
     TensorImpl::TensorImpl(Storage&& storage, Shape&& shape, IndexArray&& stride) :
@@ -72,8 +75,12 @@ namespace st {
 
     data_t TensorImpl::eval(IndexArray idx) const {
         int index = 0;
-        for (int i = 0; i < n_dim(); ++i) {
-            index += idx[i]*_stride[i];
+        if (idx.size() >= _shape.n_dim()) {
+            for (int i = idx.size() - n_dim(); i < idx.size(); ++i)
+                index += idx[i]*_stride[i-(idx.size()-n_dim())];
+        } else {
+            for (int i = 0; i < idx.size(); ++i)
+                index += idx[i]*_stride[i+(n_dim()-idx.size())];
         }
         return item(index);
     }
@@ -174,29 +181,137 @@ namespace st {
         }
         return out;
     }
-    template<typename Etype>
-    inline TensorImpl& TensorImpl::operator=(const Exp<Etype>& src_) {
-        const Etype& src = src_.self();
-        std::vector<index_t> dim_cnt;
-        for (int i = 0; i < n_dim(); ++i) dim_cnt.push_back(0);
+
+    // iterator
+    TensorImpl::iterator::iterator(TensorImpl *tensor, std::vector<index_t> idx)
+        : _tensor(tensor), _idx(idx) {
+        for (int i = 0; i < tensor->_shape.n_dim(); ++i) {
+            idx.push_back(0);
+        }
+    }
+
+    TensorImpl::iterator& TensorImpl::iterator::operator++() {
         int cnt = 0;
-        while (cnt < d_size()) {
-            for (int i = n_dim()-1; i >= 0; --i) {
-                if (dim_cnt[i] < size(i)) {
-                    dim_cnt[i]++;
-                    break;
-                } else {
-                    dim_cnt[i] = 0;
-                }
+        for (int i = (int)_idx.size()-1; i >= 0; --i) {
+            if (_idx[i]+1 < _tensor->size()[i]) {
+                ++_idx[i];
+                break;
+            } else {
+                _idx[i] = 0;
+                ++cnt;
             }
-            int idx = 0;
-            for (int i = 0; i < n_dim(); ++i) {
-                idx += dim_cnt[i] * _stride[i];
+        }
+        if (cnt == _idx.size()) {
+            for (int i = 0; i < _idx.size(); ++i) {
+                _idx[i] = _tensor->size()[i];
             }
-            _storage[idx] = src.eval(dim_cnt);
-            ++cnt;
         }
         return *this;
     }
 
+    TensorImpl::iterator TensorImpl::iterator::operator++(int) {
+        iterator tmp = *this;
+        ++*this;
+        return tmp;
+    }
+
+    TensorImpl::iterator& TensorImpl::iterator::operator--() {
+        for (int i = 0; i < _idx.size(); --i) {
+            if (_idx[i] > 0) {
+                --_idx[i];
+                break;
+            } else {
+                _idx[i] = _tensor->size()[i]-1;
+            }
+        }
+        return *this;
+    }
+
+    TensorImpl::iterator TensorImpl::iterator::operator--(int) {
+        iterator tmp = *this;
+        --*this;
+        return tmp;
+    }
+
+    TensorImpl::iterator& TensorImpl::iterator::operator+=(index_t n) {
+        for (int i = 0; i < n; ++i) {
+            ++*this;
+        }
+        return *this;
+    }
+
+    TensorImpl::iterator& TensorImpl::iterator::operator-=(index_t n) {
+        for (int i = 0; i < n; ++i) {
+            --*this;
+        }
+        return *this;
+    }
+
+    TensorImpl::iterator TensorImpl::iterator::operator+(index_t n) const {
+        iterator tmp = *this;
+        tmp += n;
+        return tmp;
+    }
+
+    TensorImpl::iterator TensorImpl::iterator::operator-(index_t n) const {
+        iterator tmp = *this;
+        tmp -= n;
+        return tmp;
+    }
+
+    index_t TensorImpl::iterator::operator-(const iterator& rhs) const {
+        index_t cnt = 0;
+        std::vector<index_t> idx = _idx;
+        while (idx != rhs._idx) {
+            ++cnt;
+            for (int i = (int)idx.size()-1; i >= 0; --i) {
+                if (idx[i] > 0) {
+                    --idx[i];
+                    break;
+                } else {
+                    idx[i] = _tensor->size()[i]-1;
+                }
+            }
+        }
+        return cnt;
+    }
+
+    bool TensorImpl::iterator::operator==(const iterator& rhs) const {
+        return _idx == rhs._idx && _tensor == rhs._tensor;
+    }
+
+    bool TensorImpl::iterator::operator!=(const iterator& rhs) const {
+        return !(*this == rhs);
+    }
+
+    TensorImpl::iterator::reference TensorImpl::iterator::operator*() const {
+        index_t idx = 0;
+        for (int i = 0; i < _idx.size(); ++i) {
+            idx += _idx[i] * _tensor->_stride[i];
+        }
+        idx += _tensor->offset();
+        return _tensor->_storage[idx];
+    }
+
+    TensorImpl::iterator::pointer TensorImpl::iterator::operator->() const {
+        return &**this;
+    }
+
+    // const_iterator
+    // iterator method
+    TensorImpl::iterator TensorImpl::begin() {
+        std::vector<index_t> idx;
+        for (int i = 0; i < n_dim(); ++i) {
+            idx.push_back(0);
+        }
+        return {this, idx};
+    }
+
+    TensorImpl::iterator TensorImpl::end() {
+        std::vector<index_t> idx;
+        for (int i = 0; i < n_dim(); ++i) {
+            idx.push_back(size(i));
+        }
+        return {this, idx};
+    }
 } // SimpleTensor
