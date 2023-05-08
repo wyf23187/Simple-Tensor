@@ -43,10 +43,6 @@ namespace st {
             const const_iterator operator++(int);
             const_iterator& operator--();
             const_iterator operator--(int);
-            const_iterator& operator+=(index_t idx);
-            const_iterator& operator-=(index_t idx);
-            const_iterator operator+(index_t idx) const;
-            const_iterator operator-(index_t idx) const;
             index_t operator-(const const_iterator& other) const;
             bool operator==(const const_iterator& other) const;
             bool operator!=(const const_iterator& other) const;
@@ -71,10 +67,6 @@ namespace st {
             iterator operator++(int);
             iterator& operator--();
             iterator operator--(int);
-            iterator& operator+=(index_t idx);
-            iterator& operator-=(index_t idx);
-            iterator operator+(index_t idx) const;
-            iterator operator-(index_t idx) const;
             index_t operator-(const iterator& other) const;
             bool operator==(const iterator& other) const;
             bool operator!=(const iterator& other) const;
@@ -96,7 +88,8 @@ namespace st {
         data_t& operator[](std::initializer_list<index_t> dims); // use initializer list to access/modify the data.
         data_t operator[](std::initializer_list<index_t> dims) const;
         [[nodiscard]] data_t item() const;
-        [[nodiscard]] data_t item(int idx) const;
+        [[nodiscard]] data_t item(index_t idx) const;
+		[[nodiscard]] data_t& item(index_t idx);
         [[nodiscard]] data_t eval(IndexArray idx) const;
 
         [[nodiscard]] Alloc::NonTrivalUniquePtr<TensorImpl> slice(index_t idx, index_t dim = 0) const;
@@ -109,7 +102,7 @@ namespace st {
         friend std::ostream& operator<<(std::ostream& out, const TensorImpl& tensor);
 
         template<typename Etype>
-        inline TensorImpl& operator=(const Exp<Etype>& src_) {
+        TensorImpl& operator=(const Exp<Etype>& src_) {
             const Etype& src = src_.self();
             std::vector<index_t> dim_cnt;
             for (int i = 0; i < n_dim(); ++i) dim_cnt.push_back(0);

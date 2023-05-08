@@ -69,11 +69,15 @@ namespace st {
         return _storage[0];
     }
 
-    data_t TensorImpl::item(int idx) const {
-        return _storage[idx+offset()];
-    }
+   data_t TensorImpl::item(index_t idx) const {
+        return _storage[idx];
+	}
 
-    data_t TensorImpl::eval(IndexArray idx) const {
+	data_t& TensorImpl::item(index_t idx)
+	{
+		return _storage[idx];
+	}
+	data_t TensorImpl::eval(IndexArray idx) const {
         int index = 0;
         if (idx.size() >= _shape.n_dim()) {
             for (int i = idx.size() - n_dim(); i < idx.size(); ++i)
@@ -122,6 +126,7 @@ namespace st {
         for (int i = 0; i < shape.n_dim(); ++i) {
             if (i+1 < shape.n_dim()) ptr->_stride[i] = shape.sub_size(i+1);
             else ptr->_stride[i] = 1;
+			if (shape[i] == 1) ptr->_stride[i] = 0;
         }
         return ptr;
     }
@@ -230,32 +235,6 @@ namespace st {
     TensorImpl::iterator TensorImpl::iterator::operator--(int) {
         iterator tmp = *this;
         --*this;
-        return tmp;
-    }
-
-    TensorImpl::iterator& TensorImpl::iterator::operator+=(index_t n) {
-        for (int i = 0; i < n; ++i) {
-            ++*this;
-        }
-        return *this;
-    }
-
-    TensorImpl::iterator& TensorImpl::iterator::operator-=(index_t n) {
-        for (int i = 0; i < n; ++i) {
-            --*this;
-        }
-        return *this;
-    }
-
-    TensorImpl::iterator TensorImpl::iterator::operator+(index_t n) const {
-        iterator tmp = *this;
-        tmp += n;
-        return tmp;
-    }
-
-    TensorImpl::iterator TensorImpl::iterator::operator-(index_t n) const {
-        iterator tmp = *this;
-        tmp -= n;
         return tmp;
     }
 
