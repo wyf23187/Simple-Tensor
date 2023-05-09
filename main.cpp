@@ -17,31 +17,9 @@ Tensor MakeMatrix(index_t n, index_t m) {
 	return tensor;
 }
 int main() {
-	Tensor t1 = MakeMatrix(3, 4);
-	Tensor t2 = MakeMatrix(3, 4);
-	Tensor t3 = MakeMatrix(3, 4);
-//	std::cout << t1 << std::endl;
-//	std::cout << t2 << std::endl;
-	BinaryExp t4 = t1+t2;
-	BinaryExp t5 = t1*t2;
-//	t2 = t4; 有问题
-	t2 = t4+t5;
-	std::cout << t2 << std::endl;
-	Tensor::iterator it = {&t1, {}};
-	std::cout << *(++it) << std::endl;
-	std::cout << *(++it) << std::endl;
-	std::cout << *t1.begin() << std::endl;
-	std::cout << t1 << std::endl;
-	auto v = t1.end();
-	--v;
-	*v = 10;
-	std::cout << *(v) << std::endl; //有问题
 
-	Tensor x = t1.slice(0);
-  	std::cout << x << std::endl;
-  	auto x1 = t1.transpose(0, 1);
-  	std::cout << x1 << std::endl;
-  	auto x2 = t1.view({1, 12});
-  	std::cout << x2 << std::endl;
+	const Tensor x = MakeMatrix(4, 4);
+	for(auto i = x.begin(); i != x.end(); ++i)
+		std::cout << *i << std::endl;
     return 0;
 }
