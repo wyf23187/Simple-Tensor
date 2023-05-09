@@ -53,10 +53,11 @@ namespace st
 	Tensor::iterator::iterator(Tensor* tensor, std::vector<index_t> idx)
 	{
 		_tensor = tensor;
-		_idx = std::move(idx);
+		for (auto i : idx)
+			_idx.push_back(i);
 		//_shape is a protected value in TensorImpl
-		for(int i = 0; i < tensor->_impl->n_dim(); ++i)
-			_idx.push_back(0);
+//		for(int i = 0; i < tensor->_impl->n_dim(); ++i)
+//			_idx.push_back(0);
 	}
 
 	Tensor::iterator& Tensor::iterator::operator++()
@@ -94,6 +95,14 @@ namespace st
 
 	Tensor::iterator& Tensor::iterator::operator--()
 	{
+		if (*this == _tensor->end())
+		{
+			for (int i = 0; i < _idx.size(); ++i)
+			{
+				_idx[i] = _tensor->size()[i]-1;
+			}
+			return *this;
+		}
 		for (int i = 0; i < _idx.size(); --i)
 		{
 			if (_idx[i] > 0)
@@ -176,11 +185,24 @@ namespace st
 	Tensor::iterator Tensor::end()
 	{
 		std::vector<index_t> idx;
+		std::cout << _impl->n_dim() << std::endl;
 		for (int i = 0; i < _impl->n_dim(); ++i)
 		{
 			idx.push_back(_impl->size()[i]);
 		}
 		return iterator(this, idx);
+	}
+	data_t Tensor::eval(IndexArray idx) const
+	{
+		int index = 0;
+		if (idx.size() >= _impl->n_dim()) {
+			for (int i = idx.size() - n_dim(); i < idx.size(); ++i)
+				index += idx[i]*_impl->stride()[i-(idx.size()-n_dim())];
+		} else {
+			for (int i = 0; i < idx.size(); ++i)
+				index += idx[i]*_impl->stride()[i+(n_dim()-idx.size())];
+		}
+		return item(index);
 	}
 
 } // SimpleTensor

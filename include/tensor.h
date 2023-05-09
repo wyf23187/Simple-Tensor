@@ -2,6 +2,7 @@
 #define TENSOR_TENSOR_H
 
 #include "tensor_impl.h"
+#include "allocator.h"
 
 namespace st {
 
@@ -14,9 +15,16 @@ namespace st {
 		explicit Tensor(const Shape& shape);
 		Tensor(const data_t* data, const Shape& shape);
 		Tensor(Storage&& storage, Shape&& shape, IndexArray&& stride);
-		Tensor(const Tensor& other) = default;
+		Tensor(const Tensor& other) {
+			_impl = Alloc::unique_construct<TensorImpl>(*other._impl);
+		}
 		Tensor(Tensor&& other) = default;
-		Tensor& operator=(const Tensor &other) = default;
+		Tensor& operator=(const Tensor &other) {
+			if (this != &other) {
+				_impl = Alloc::unique_construct<TensorImpl>(*other._impl);
+			}
+			return *this;
+		}
 		Tensor& operator=(Tensor &&other) = default;
 		explicit Tensor(Alloc::NonTrivalUniquePtr<TensorImpl>&& ptr);
 
@@ -32,6 +40,7 @@ namespace st {
 		[[nodiscard]] bool is_contiguous();
 		[[nodiscard]] data_t item() const;
 		[[nodiscard]] data_t item(const int idx) const;
+		[[nodiscard]] data_t eval(IndexArray idx) const;
 		data_t &operator[](std::initializer_list<index_t> dims);
 		data_t operator[](std::initializer_list<index_t> dims) const;
 
@@ -89,7 +98,7 @@ namespace st {
 			bool operator!=(const iterator& other) const;
 			reference operator*() const;
 			pointer operator->() const;
-		 private:
+//		 private:
 			std::vector<index_t> _idx;
 			Tensor* _tensor;
 		};

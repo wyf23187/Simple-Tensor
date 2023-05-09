@@ -25,12 +25,17 @@ int main() {
 	BinaryExp t4 = t1+t2;
 	BinaryExp t5 = t1*t2;
 //	t2 = t4; 有问题
+	t2 = t4+t5;
+	std::cout << t2 << std::endl;
 	Tensor::iterator it = {&t1, {}};
 	std::cout << *(++it) << std::endl;
 	std::cout << *(++it) << std::endl;
 	std::cout << *t1.begin() << std::endl;
 	std::cout << t1 << std::endl;
-//	std::cout << *t1.end() << std::endl; 有问题
+	auto v = t1.end();
+	--v;
+	*v = 10;
+	std::cout << *(v) << std::endl; //有问题
 
 	Tensor x = t1.slice(0);
   	std::cout << x << std::endl;
