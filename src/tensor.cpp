@@ -165,7 +165,6 @@ namespace st
 		{
 			idx += _idx[i] * _tensor->_impl->stride()[i];
 		}
-		idx += _tensor->_impl->offset();
 		return _tensor->_impl->item(idx);
 	}
 
@@ -175,6 +174,12 @@ namespace st
 	}
 
 	//const_iterator
+	Tensor::const_iterator::const_iterator(const Tensor* tensor, std::vector<index_t> idx)
+	{
+		_tensor = tensor;
+		for (auto i : idx)
+			_idx.push_back(i);
+	}
 	Tensor::const_iterator& Tensor::const_iterator::operator++()
 	{
 		int cnt = 0;
@@ -280,7 +285,6 @@ namespace st
 		{
 			idx += _idx[i] * _tensor->_impl->stride()[i];
 		}
-		idx += _tensor->_impl->offset();
 		return _tensor->_impl->item(idx);
 	}
 
@@ -292,13 +296,12 @@ namespace st
 
 	Tensor::iterator Tensor::begin()
 	{
-		return iterator(this, std::vector<index_t>());
+		return iterator(this, std::vector<index_t>(_impl->n_dim()));
 	}
 
 	Tensor::iterator Tensor::end()
 	{
 		std::vector<index_t> idx;
-		std::cout << _impl->n_dim() << std::endl;
 		for (int i = 0; i < _impl->n_dim(); ++i)
 		{
 			idx.push_back(_impl->size()[i]);
@@ -308,7 +311,17 @@ namespace st
 
 	Tensor::const_iterator Tensor::begin() const
 	{
-		return const_iterator(this, std::vector<index_t>());
+		return const_iterator(this, std::vector<index_t>(_impl->n_dim()));
+	}
+
+	Tensor::const_iterator Tensor::end() const
+	{
+		std::vector<index_t> idx;
+		for (int i = 0; i < _impl->n_dim(); ++i)
+		{
+			idx.push_back(_impl->size()[i]);
+		}
+		return const_iterator(this, idx);
 	}
 	data_t Tensor::eval(IndexArray idx) const
 	{

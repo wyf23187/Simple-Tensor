@@ -50,30 +50,6 @@ namespace st {
         // friend function
         friend std::ostream& operator<<(std::ostream& out, const TensorImpl& tensor);
 
-//        template<typename Etype>
-//        TensorImpl& operator=(const Exp<Etype>& src_) {
-//            const Etype& src = src_.self();
-//            std::vector<index_t> dim_cnt;
-//            for (int i = 0; i < n_dim(); ++i) dim_cnt.push_back(0);
-//            int cnt = 0;
-//            while (cnt < d_size()) {
-//                int idx = 0;
-//                for (int i = 0; i < n_dim(); ++i) {
-//                    idx += dim_cnt[i] * _stride[i];
-//                }
-//                _storage[idx] = src.eval(dim_cnt);
-//                for (int i = n_dim()-1; i >= 0; --i) {
-//                    if (dim_cnt[i]+1 < size(i)) {
-//                        dim_cnt[i]++;
-//                        break;
-//                    } else {
-//                        dim_cnt[i] = 0;
-//                    }
-//                }
-//                ++cnt;
-//            }
-//            return *this;
-//        }
 
     protected:
         Storage _storage;
