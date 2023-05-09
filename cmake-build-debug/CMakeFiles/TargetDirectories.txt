@@ -1,3 +1,0 @@
-D:/Clion/ws/Tensor_/cmake-build-debug/CMakeFiles/tensor.dir
-D:/Clion/ws/Tensor_/cmake-build-debug/CMakeFiles/edit_cache.dir
-D:/Clion/ws/Tensor_/cmake-build-debug/CMakeFiles/rebuild_cache.dir
