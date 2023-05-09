@@ -56,7 +56,13 @@ namespace st {
 		//iterator
 		class const_iterator
 		{
+		 private:
+			using const_reference = const data_t&;
+			using const_pointer = const data_t*;
+			std::vector<index_t> _idx;
+			const Tensor* _tensor;
 		 public:
+			const_iterator(const Tensor* tensor,std::vector<index_t> idx);
 			const_iterator(const const_iterator& other) = default;
 			const_iterator(const_iterator&& other) = default;
 			~const_iterator() = default;
@@ -70,8 +76,8 @@ namespace st {
 			index_t operator-(const const_iterator& other) const;
 			bool operator==(const const_iterator& other) const;
 			bool operator!=(const const_iterator& other) const;
-			data_t operator*() const;
-			data_t* operator->() const;
+			const_reference operator*() const;
+			const_pointer operator->() const;
 		};
 
 		class iterator
@@ -98,7 +104,7 @@ namespace st {
 			bool operator!=(const iterator& other) const;
 			reference operator*() const;
 			pointer operator->() const;
-//		 private:
+		 private:
 			std::vector<index_t> _idx;
 			Tensor* _tensor;
 		};

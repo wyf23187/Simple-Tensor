@@ -30,57 +30,6 @@ namespace st {
         [[nodiscard]] const IndexArray& stride() const { return _stride; }
 
         // iterator
-        class const_iterator {
-        public:
-            const_iterator(const const_iterator& other) = default;
-            const_iterator(const_iterator&& other) = default;
-            ~const_iterator() = default;
-
-            const_iterator& operator=(const const_iterator& other) = default;
-            const_iterator& operator=(const_iterator&& other) = default;
-
-            const_iterator& operator++();
-            const const_iterator operator++(int);
-            const_iterator& operator--();
-            const_iterator operator--(int);
-            index_t operator-(const const_iterator& other) const;
-            bool operator==(const const_iterator& other) const;
-            bool operator!=(const const_iterator& other) const;
-            const data_t& operator*() const;
-            const data_t* operator->() const;
-        };
-
-        class iterator {
-        private:
-            using reference = data_t&;
-            using pointer = data_t*;
-        public:
-            iterator(TensorImpl* tensor, std::vector<index_t> idx);
-            iterator(const iterator& other) = default;
-            iterator(iterator&& other) = default;
-            ~iterator() = default;
-
-            iterator& operator=(const iterator& other) = default;
-            iterator& operator=(iterator&& other) = default;
-
-            iterator& operator++();
-            iterator operator++(int);
-            iterator& operator--();
-            iterator operator--(int);
-            index_t operator-(const iterator& other) const;
-            bool operator==(const iterator& other) const;
-            bool operator!=(const iterator& other) const;
-            data_t& operator*() const;
-            data_t* operator->() const;
-        private:
-            std::vector<index_t> _idx;
-            TensorImpl* _tensor;
-        };
-
-        [[nodiscard]] const_iterator begin() const;
-        [[nodiscard]] const_iterator end() const;
-        [[nodiscard]] iterator begin();
-        [[nodiscard]] iterator end();
 
         // methods
         bool is_contiguous();

@@ -175,6 +175,119 @@ namespace st
 	}
 
 	//const_iterator
+	Tensor::const_iterator& Tensor::const_iterator::operator++()
+	{
+		int cnt = 0;
+		for (int i = (int)_idx.size()-1; i >= 0; --i)
+		{
+			if (_idx[i]+1 < _tensor->size()[i])
+			{
+				++_idx[i];
+				break;
+			}
+			else
+			{
+				_idx[i] = 0;
+				++cnt;
+			}
+		}
+		if (cnt == _idx.size())
+		{
+			for (int i = 0; i < _idx.size(); ++i)
+			{
+				_idx[i] = _tensor->size()[i];
+			}
+		}
+		return *this;
+	}
+
+	Tensor::const_iterator Tensor::const_iterator::operator++(int)
+	{
+		const_iterator tmp = *this;
+		++*this;
+		return tmp;
+	}
+
+	Tensor::const_iterator& Tensor::const_iterator::operator--()
+	{
+		if (*this == _tensor->end())
+		{
+			for (int i = 0; i < _idx.size(); ++i)
+			{
+				_idx[i] = _tensor->size()[i]-1;
+			}
+			return *this;
+		}
+		for (int i = 0; i < _idx.size(); --i)
+		{
+			if (_idx[i] > 0)
+			{
+				--_idx[i];
+				break;
+			}
+			else
+			{
+				_idx[i] = _tensor->size()[i]-1;
+			}
+		}
+		return *this;
+	}
+
+	Tensor::const_iterator Tensor::const_iterator::operator--(int)
+	{
+		const_iterator tmp = *this;
+		--*this;
+		return tmp;
+	}
+
+	index_t Tensor::const_iterator::operator-(const const_iterator& other) const
+	{
+		index_t cnt = 0;
+		std::vector<index_t> idx = _idx;
+		while (idx != other._idx)
+		{
+			++cnt;
+			for (int i = (int)idx.size()-1; i >= 0; --i)
+			{
+				if (idx[i] > 0)
+				{
+					--idx[i];
+					break;
+				}
+				else
+				{
+					idx[i] = _tensor->size()[i]-1;
+				}
+			}
+		}
+		return cnt;
+	}
+
+	bool Tensor::const_iterator::operator==(const const_iterator& other) const
+	{
+		return _idx == other._idx && _tensor == other._tensor;
+	}
+
+	bool Tensor::const_iterator::operator!=(const const_iterator& other) const
+	{
+		return !(*this == other);
+	}
+
+	Tensor::const_iterator::const_reference Tensor::const_iterator::operator*() const
+	{
+		index_t idx = 0;
+		for (int i = 0; i < _idx.size(); ++i)
+		{
+			idx += _idx[i] * _tensor->_impl->stride()[i];
+		}
+		idx += _tensor->_impl->offset();
+		return _tensor->_impl->item(idx);
+	}
+
+	Tensor::const_iterator::const_pointer Tensor::const_iterator::operator->() const
+	{
+		return &**this;
+	}
 	//iterator_methods
 
 	Tensor::iterator Tensor::begin()
@@ -191,6 +304,11 @@ namespace st
 			idx.push_back(_impl->size()[i]);
 		}
 		return iterator(this, idx);
+	}
+
+	Tensor::const_iterator Tensor::begin() const
+	{
+		return const_iterator(this, std::vector<index_t>());
 	}
 	data_t Tensor::eval(IndexArray idx) const
 	{
