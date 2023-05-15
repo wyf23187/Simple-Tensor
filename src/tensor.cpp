@@ -1,50 +1,52 @@
+#include <memory>
 #include "tensor.h"
+#include "exp.h"
 
 namespace st
 {
 	//constructors
 	Tensor::Tensor(const Storage& storage, const Shape& shape, const IndexArray& stride) :
-		_impl(Alloc::unique_construct<TensorImpl>(storage, shape, stride)) {}
+		Exp<TensorImpl>(Alloc::unique_construct<TensorImpl>(storage, shape, stride)) {}
 	Tensor::Tensor(const Storage& storage, const Shape& shape) :
-		_impl(Alloc::unique_construct<TensorImpl>(storage, shape)) {}
+		Exp<TensorImpl>(Alloc::unique_construct<TensorImpl>(storage, shape)) {}
 	Tensor::Tensor(const Shape& shape) :
-		_impl(Alloc::unique_construct<TensorImpl>(shape)) {}
+        Exp<TensorImpl>(Alloc::unique_construct<TensorImpl>(shape)) {}
 	Tensor::Tensor(const data_t* data, const Shape& shape) :
-		_impl(Alloc::unique_construct<TensorImpl>(data, shape)) {}
+        Exp<TensorImpl>(Alloc::unique_construct<TensorImpl>(data, shape)) {}
 	Tensor::Tensor(Storage&& storage, Shape&& shape, IndexArray&& stride) :
-		_impl(Alloc::unique_construct<TensorImpl>(std::move(storage), std::move(shape), std::move(stride))) {}
-	Tensor::Tensor(Alloc::NonTrivalUniquePtr<TensorImpl>&& ptr) : _impl(std::move(ptr)) {}
+        Exp<TensorImpl>(Alloc::unique_construct<TensorImpl>(std::move(storage), std::move(shape), std::move(stride))) {}
+	Tensor::Tensor(Alloc::NonTrivalUniquePtr<TensorImpl>&& ptr) : Exp<TensorImpl>(std::move(ptr)) {}
 
 	//operations
-	bool Tensor::is_contiguous() { return _impl->is_contiguous(); }
-	data_t Tensor::item() const { return _impl->item(); }
-	data_t Tensor::item(const int idx) const { return _impl->item(idx); }
-	data_t &Tensor::operator[](std::initializer_list<index_t> dims) { return _impl->operator[](dims); }
-	data_t Tensor::operator[](std::initializer_list<index_t> dims) const { return _impl->operator[](dims); }
+	bool Tensor::is_contiguous() { return impl_ptr->is_contiguous(); }
+	data_t Tensor::item() const { return impl_ptr->item(); }
+	data_t Tensor::item(const int idx) const { return impl_ptr->item(idx); }
+	data_t &Tensor::operator[](std::initializer_list<index_t> dims) { return impl_ptr->operator[](dims); }
+	data_t Tensor::operator[](std::initializer_list<index_t> dims) const { return impl_ptr->operator[](dims); }
 
 	Tensor Tensor::slice(index_t idx, index_t dim) const
 	{
-		return Tensor(_impl->slice(idx, dim));
+		return Tensor(impl_ptr->slice(idx, dim));
 	}
 	Tensor Tensor::slice(index_t start, index_t end, index_t dim) const
 	{
-		return Tensor(_impl->slice(start, end, dim));
+		return Tensor(impl_ptr->slice(start, end, dim));
 	}
 	Tensor Tensor::view(const Shape& shape) const
 	{
-		return Tensor(_impl->view(shape));
+		return Tensor(impl_ptr->view(shape));
 	}
 	Tensor Tensor::transpose(index_t dim1, index_t dim2) const
 	{
-		return Tensor(_impl->transpose(dim1, dim2));
+		return Tensor(impl_ptr->transpose(dim1, dim2));
 	}
 	Tensor Tensor::permute(std::initializer_list<index_t> dims) const
 	{
-		return Tensor(_impl->permute(dims));
+		return Tensor(impl_ptr->permute(dims));
 	}
 	std::ostream& operator<<(std::ostream& out, const Tensor& tensor)
 	{
-		out << *tensor._impl;
+		out << *tensor.impl_ptr;
 		return out;
 	}
 
@@ -55,9 +57,6 @@ namespace st
 		_tensor = tensor;
 		for (auto i : idx)
 			_idx.push_back(i);
-		//_shape is a protected value in TensorImpl
-//		for(int i = 0; i < tensor->_impl->n_dim(); ++i)
-//			_idx.push_back(0);
 	}
 
 	Tensor::iterator& Tensor::iterator::operator++()
@@ -163,9 +162,9 @@ namespace st
 		index_t idx = 0;
 		for (int i = 0; i < _idx.size(); ++i)
 		{
-			idx += _idx[i] * _tensor->_impl->stride()[i];
+			idx += _idx[i] * _tensor->impl_ptr->stride()[i];
 		}
-		return _tensor->_impl->item(idx);
+		return _tensor->impl_ptr->item(idx);
 	}
 
 	Tensor::iterator::pointer Tensor::iterator::operator->() const
@@ -283,9 +282,9 @@ namespace st
 		index_t idx = 0;
 		for (int i = 0; i < _idx.size(); ++i)
 		{
-			idx += _idx[i] * _tensor->_impl->stride()[i];
+			idx += _idx[i] * _tensor->impl_ptr->stride()[i];
 		}
-		return _tensor->_impl->item(idx);
+		return _tensor->impl_ptr->item(idx);
 	}
 
 	Tensor::const_iterator::const_pointer Tensor::const_iterator::operator->() const
@@ -296,42 +295,42 @@ namespace st
 
 	Tensor::iterator Tensor::begin()
 	{
-		return iterator(this, std::vector<index_t>(_impl->n_dim()));
+		return iterator(this, std::vector<index_t>(impl_ptr->n_dim()));
 	}
 
 	Tensor::iterator Tensor::end()
 	{
 		std::vector<index_t> idx;
-		for (int i = 0; i < _impl->n_dim(); ++i)
+		for (int i = 0; i < impl_ptr->n_dim(); ++i)
 		{
-			idx.push_back(_impl->size()[i]);
+			idx.push_back(impl_ptr->size()[i]);
 		}
 		return iterator(this, idx);
 	}
 
 	Tensor::const_iterator Tensor::begin() const
 	{
-		return const_iterator(this, std::vector<index_t>(_impl->n_dim()));
+		return const_iterator(this, std::vector<index_t>(impl_ptr->n_dim()));
 	}
 
 	Tensor::const_iterator Tensor::end() const
 	{
 		std::vector<index_t> idx;
-		for (int i = 0; i < _impl->n_dim(); ++i)
+		for (int i = 0; i < impl_ptr->n_dim(); ++i)
 		{
-			idx.push_back(_impl->size()[i]);
+			idx.push_back(impl_ptr->size()[i]);
 		}
 		return const_iterator(this, idx);
 	}
 	data_t Tensor::eval(IndexArray idx) const
 	{
 		int index = 0;
-		if (idx.size() >= _impl->n_dim()) {
+		if (idx.size() >= impl_ptr->n_dim()) {
 			for (int i = idx.size() - n_dim(); i < idx.size(); ++i)
-				index += idx[i]*_impl->stride()[i-(idx.size()-n_dim())];
+				index += idx[i]*impl_ptr->stride()[i-(idx.size()-n_dim())];
 		} else {
 			for (int i = 0; i < idx.size(); ++i)
-				index += idx[i]*_impl->stride()[i+(n_dim()-idx.size())];
+				index += idx[i]*impl_ptr->stride()[i+(n_dim()-idx.size())];
 		}
 		return item(index);
 	}

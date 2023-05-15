@@ -15,7 +15,7 @@ namespace st {
         class trivial_delete_handler {
         public:
             explicit trivial_delete_handler(index_t size_): size(size_) {}
-            void operator()(void* ptr) { deallocate(ptr, size); }
+            void operator()(void* ptr) const { deallocate(ptr, size); }
         private:
             index_t size;
         };

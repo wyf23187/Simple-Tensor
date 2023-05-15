@@ -186,5 +186,4 @@ namespace st {
         }
         return out;
     }
-
-} // SimpleTensor
+} // st

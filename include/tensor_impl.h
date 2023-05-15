@@ -20,6 +20,10 @@ namespace st {
         TensorImpl(Storage&& Storage, Shape&& Shape, IndexArray&& stride);
         TensorImpl(const TensorImpl& other) = default;
         TensorImpl(TensorImpl&& other) = default;
+        template<typename ImplType>
+        explicit TensorImpl(const ImplType& impl) : TensorImpl(impl->size()) {
+            this->operator=(impl);
+        }
 
         // inline function
         [[nodiscard]] index_t n_dim() const { return _shape.n_dim(); }
@@ -28,8 +32,6 @@ namespace st {
         [[nodiscard]] const Shape& size() const { return _shape; }
         [[nodiscard]] index_t offset() const { return _storage.offset(); }
         [[nodiscard]] const IndexArray& stride() const { return _stride; }
-
-        // iterator
 
         // methods
         bool is_contiguous();
@@ -50,6 +52,29 @@ namespace st {
         // friend function
         friend std::ostream& operator<<(std::ostream& out, const TensorImpl& tensor);
 
+        template<typename ImplType>
+        TensorImpl& operator=(const ImplType& src) {
+            std::vector<index_t> dim_cnt(n_dim());
+            for (int i = 0; i < n_dim(); ++i) dim_cnt.push_back(0);
+            int cnt = 0;
+            while (cnt < d_size()) {
+                int idx = 0;
+                for (int i = 0; i < n_dim(); ++i) {
+                    idx += dim_cnt[i] * _stride[i];
+                }
+                item(idx) = src->eval(dim_cnt);
+                for (int i = n_dim()-1; i >= 0; --i) {
+                    if (dim_cnt[i]+1 < _shape[i]) {
+                        dim_cnt[i]++;
+                        break;
+                    } else {
+                        dim_cnt[i] = 0;
+                    }
+                }
+                ++cnt;
+            }
+            return *this;
+        }
 
     protected:
         Storage _storage;
