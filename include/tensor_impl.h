@@ -82,6 +82,19 @@ namespace st {
         IndexArray _stride;
     };
 
-} // SimpleTensor
+    struct TensorMaker {
+        static TensorImpl ones(const Shape& shape);
+        static TensorImpl ones_like(const TensorImpl& tensor);
+        static TensorImpl zeros(const Shape& shape);
+        static TensorImpl zeros_like(const TensorImpl& tensor);
+        static TensorImpl rand(const Shape& shape);
+        static TensorImpl rand_like(const TensorImpl& tensor);
+        static TensorImpl randn(const Shape& shape);
+        static TensorImpl randn_like(const TensorImpl& tensor);
+        static TensorImpl linspace(index_t start, index_t end, index_t step);
+        static TensorImpl eye(index_t n);
+        static TensorImpl eye(index_t m, index_t n);
+    };
+} // st
 
 #endif //TENSOR_TENSOR_IMPL_H

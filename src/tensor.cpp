@@ -124,29 +124,6 @@ namespace st
 		return tmp;
 	}
 
-	index_t Tensor::iterator::operator-(const iterator& other) const
-	{
-		index_t cnt = 0;
-		std::vector<index_t> idx = _idx;
-		while (idx != other._idx)
-		{
-			++cnt;
-			for (int i = (int)idx.size()-1; i >= 0; --i)
-			{
-				if (idx[i] > 0)
-				{
-					--idx[i];
-					break;
-				}
-				else
-				{
-					idx[i] = _tensor->size()[i]-1;
-				}
-			}
-		}
-		return cnt;
-	}
-
 	bool Tensor::iterator::operator==(const iterator& other) const
 	{
 		return _idx == other._idx && _tensor == other._tensor;
@@ -334,5 +311,9 @@ namespace st
 		}
 		return item(index);
 	}
+
+    Tensor Tensor::rand(const st::Shape &shape) {
+        return Tensor(Alloc::unique_construct<TensorImpl>(TensorMaker::ones(shape)));
+    }
 
 } // SimpleTensor

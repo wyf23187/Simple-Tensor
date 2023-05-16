@@ -22,12 +22,20 @@ namespace st {
     class BinaryExp { // Binary Expression
     public:
         [[nodiscard]] inline data_t eval(IndexArray idx) const {
-            return Op::eval(lhs_ptr->eval(idx), rhs_ptr->eval(idx));
+            return Op::eval(idx, lhs_ptr, rhs_ptr);
         }
         BinaryExp(const std::shared_ptr<LhsType>& _lhs, const std::shared_ptr<RhsType> _rhs)
             :lhs_ptr(_lhs), rhs_ptr(_rhs) {}
-        [[nodiscard]] const Shape& size() const {
-            return lhs_ptr->size();
+        [[nodiscard]] Shape size() const {
+            return Op::size(lhs_ptr, rhs_ptr);
+        }
+        [[nodiscard]] index_t size(index_t idx) const {
+            if (idx >= lhs_ptr->ndim()) return rhs_ptr->size(idx);
+            if (idx >= rhs_ptr->ndim()) return lhs_ptr->size(idx);
+            return max(lhs_ptr->size(idx), rhs_ptr->size(idx));
+        }
+        [[nodiscard]] index_t ndim() const {
+            return max(lhs_ptr->ndim(), rhs_ptr->ndim());
         }
     private:
         std::shared_ptr<LhsType> lhs_ptr;
@@ -41,8 +49,14 @@ namespace st {
             return Op::eval(idx, lhs_ptr);
         }
         UnaryExp(const std::shared_ptr<LhsType>&& ptr): lhs_ptr(ptr) {}
-        [[nodiscard]] IndexArray& size() const {
+        [[nodiscard]] Shape& size() const {
             return lhs_ptr->size();
+        }
+        [[nodiscard]] index_t size(index_t idx) const {
+            return lhs_ptr->size(idx);
+        }
+        [[nodiscard]] index_t ndim() const {
+            return lhs_ptr->ndim();
         }
     private:
         std::shared_ptr<LhsType> lhs_ptr;

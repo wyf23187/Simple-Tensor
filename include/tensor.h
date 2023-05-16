@@ -122,6 +122,15 @@ namespace st {
             impl_ptr->operator=(src_.ptr());
 			return *this;
 		}
+
+        static Tensor ones(const Shape& shape);
+        static Tensor ones_like(const Tensor& tensor);
+        static Tensor zeros(const Shape& shape);
+        static Tensor zeros_like(const Tensor& tensor);
+        static Tensor rand(const Shape& shape);
+        static Tensor rand_like(const Tensor& tensor);
+        static Tensor randn(const Shape& shape);
+        static Tensor randn_like(const Tensor& tensor);
     };
 
 } // st

@@ -3,6 +3,8 @@
 #include <memory>
 #include <cmath>
 #include <iomanip>
+#include <random>
+#include <ctime>
 
 namespace st {
     // constructor
@@ -185,5 +187,56 @@ namespace st {
             ++cnt;
         }
         return out;
+    }
+
+    // TensorMaker
+    TensorImpl TensorMaker::ones(const Shape &shape) {
+        TensorImpl tensor(shape);
+        for (int i = 0; i < tensor.d_size(); ++i)
+            tensor.item(i) = 1;
+        return tensor;
+    }
+
+    TensorImpl TensorMaker::ones_like(const TensorImpl &tensor) {
+        return ones(tensor.size());
+    }
+
+    TensorImpl TensorMaker::zeros(const Shape &shape) {
+        TensorImpl tensor(shape);
+        for (int i = 0; i < tensor.d_size(); ++i)
+            tensor.item(i) = 0;
+        return tensor;
+    }
+
+    TensorImpl TensorMaker::zeros_like(const TensorImpl &tensor) {
+        return zeros(tensor.size());
+    }
+
+    TensorImpl TensorMaker::rand(const Shape &shape) {
+        std::random_device rd;
+        std::default_random_engine gen(rd());
+        std::uniform_real_distribution<data_t> dis(0, 1);
+        TensorImpl tensor(shape);
+        for (int i = 0; i < tensor.d_size(); ++i)
+            tensor.item(i) = dis(gen);
+        return tensor;
+    }
+
+    TensorImpl TensorMaker::rand_like(const TensorImpl &tensor) {
+        return rand(tensor.size());
+    }
+
+    TensorImpl TensorMaker::randn(const Shape &shape) {
+        std::random_device rd;
+        std::default_random_engine gen(rd());
+        std::normal_distribution<data_t> dis(0, 1);
+        TensorImpl tensor(shape);
+        for (int i = 0; i < tensor.d_size(); ++i)
+            tensor.item(i) = dis(gen);
+        return tensor;
+    }
+
+    TensorImpl TensorMaker::randn_like(const TensorImpl &tensor) {
+        return randn(tensor.size());
     }
 } // st
