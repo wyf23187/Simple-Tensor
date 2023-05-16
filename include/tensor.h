@@ -131,6 +131,7 @@ namespace st {
         static Tensor rand_like(const Tensor& tensor);
         static Tensor randn(const Shape& shape);
         static Tensor randn_like(const Tensor& tensor);
+        data_t sum() const;
     };
 
 } // st

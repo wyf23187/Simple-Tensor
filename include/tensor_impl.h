@@ -42,6 +42,7 @@ namespace st {
         [[nodiscard]] data_t item(index_t idx) const;
 		[[nodiscard]] data_t& item(index_t idx);
         [[nodiscard]] data_t eval(IndexArray idx) const;
+        data_t sum() const;
 
         [[nodiscard]] Alloc::NonTrivalUniquePtr<TensorImpl> slice(index_t idx, index_t dim = 0) const;
         [[nodiscard]] Alloc::NonTrivalUniquePtr<TensorImpl> slice(index_t start_idx, index_t end_idx, index_t dim) const;

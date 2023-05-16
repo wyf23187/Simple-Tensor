@@ -34,8 +34,8 @@ namespace st {
             if (idx >= rhs_ptr->ndim()) return lhs_ptr->size(idx);
             return max(lhs_ptr->size(idx), rhs_ptr->size(idx));
         }
-        [[nodiscard]] index_t ndim() const {
-            return max(lhs_ptr->ndim(), rhs_ptr->ndim());
+        [[nodiscard]] index_t n_dim() const {
+            return std::max(lhs_ptr->n_dim(), rhs_ptr->n_dim());
         }
     private:
         std::shared_ptr<LhsType> lhs_ptr;
@@ -55,8 +55,8 @@ namespace st {
         [[nodiscard]] index_t size(index_t idx) const {
             return lhs_ptr->size(idx);
         }
-        [[nodiscard]] index_t ndim() const {
-            return lhs_ptr->ndim();
+        [[nodiscard]] index_t n_dim() const {
+            return lhs_ptr->n_dim();
         }
     private:
         std::shared_ptr<LhsType> lhs_ptr;

@@ -189,6 +189,26 @@ namespace st {
         return out;
     }
 
+    data_t TensorImpl::sum() const {
+        data_t res = 0;
+        std::vector<index_t> idx(n_dim(), 0);
+        for (int i = 0; i < d_size(); ++i) {
+            int cnt = 0;
+            res += eval(idx);
+            for (int j = 0; j < n_dim(); ++j) {
+                if (idx[j]+1 < size()[j]) {
+                    ++idx[j];
+                    break;
+                } else {
+                    idx[j] = 0;
+                    ++cnt;
+                }
+            }
+            if (cnt == n_dim()) break;
+        }
+        return res;
+    }
+
     // TensorMaker
     TensorImpl TensorMaker::ones(const Shape &shape) {
         TensorImpl tensor(shape);

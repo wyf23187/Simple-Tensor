@@ -312,8 +312,18 @@ namespace st
 		return item(index);
 	}
 
+    data_t Tensor::sum() const {
+        return impl_ptr->sum();
+    }
+
     Tensor Tensor::rand(const st::Shape &shape) {
+        return Tensor(Alloc::unique_construct<TensorImpl>(TensorMaker::rand(shape)));
+    }
+    Tensor Tensor::ones(const st::Shape &shape) {
         return Tensor(Alloc::unique_construct<TensorImpl>(TensorMaker::ones(shape)));
+    }
+    Tensor Tensor::zeros(const st::Shape &shape) {
+        return Tensor(Alloc::unique_construct<TensorImpl>(TensorMaker::zeros(shape)));
     }
 
 } // SimpleTensor
