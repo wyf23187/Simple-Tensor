@@ -32,7 +32,7 @@ namespace st {
         // iterator
 
         // methods
-        bool is_contiguous();
+        bool is_contiguous() const;
 
         data_t& operator[](std::initializer_list<index_t> dims); // use initializer list to access/modify the data.
         data_t operator[](std::initializer_list<index_t> dims) const;

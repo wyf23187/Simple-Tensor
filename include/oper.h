@@ -1,4 +1,4 @@
-#ifndef TENSOR_OPER_H
+	#ifndef TENSOR_OPER_H
 #define TENSOR_OPER_H
 
 #include "shape.h"
