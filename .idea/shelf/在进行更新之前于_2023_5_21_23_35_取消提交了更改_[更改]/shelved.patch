@@ -1,0 +1,62 @@
+Index: main.cpp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>#include <iostream>\r\n#include \"include\\tensor_impl.h\"\r\n#include \"include\\tensor.h\"\r\nusing namespace st;\r\n//TensorImpl MakeMatrix(index_t n, index_t m) {\r\n//    TensorImpl tensor({n, m});\r\n//    for (index_t i = 0; i < n; ++i)\r\n//        for (index_t j = 0; j < m; ++j)\r\n//            tensor[{i, j}] = i*m+j;\r\n//    return tensor;\r\n//}\r\nTensor MakeMatrix(index_t n, index_t m) {\r\n\tTensor tensor({n, m});\r\n\tfor (index_t i = 0; i < n; ++i)\r\n\t\tfor (index_t j = 0; j < m; ++j)\r\n\t\t\ttensor[{i, j}] = i*m+j + 1;\r\n\treturn tensor;\r\n}\r\nint main() {\r\n\tTensor t1 = MakeMatrix(3, 4);\r\n\tTensor t2 = MakeMatrix(3, 4);\r\n\tTensor t3 = MakeMatrix(3, 4);\r\n//\tstd::cout << t1 << std::endl;\r\n//\tstd::cout << t2 << std::endl;\r\n\tBinaryExp t4 = t1+t2;\r\n\tBinaryExp t5 = t1*t2;\r\n//\tt2 = t4; 有问题\r\n\tt2 = t4+t5;\r\n\tstd::cout << t2 << std::endl;\r\n\tTensor::iterator it = {&t1, {}};\r\n\tstd::cout << *(++it) << std::endl;\r\n\tstd::cout << *(++it) << std::endl;\r\n\tstd::cout << *t1.begin() << std::endl;\r\n\tstd::cout << t1 << std::endl;\r\n\tauto v = t1.end();\r\n\t--v;\r\n\t*v = 10;\r\n\tstd::cout << *(v) << std::endl; //有问题\r\n\r\n\tTensor x = t1.slice(0);\r\n  \tstd::cout << x << std::endl;\r\n  \tauto x1 = t1.transpose(0, 1);\r\n  \tstd::cout << x1 << std::endl;\r\n  \tauto x2 = t1.view({1, 12});\r\n  \tstd::cout << x2 << std::endl;\r\n    return 0;\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main.cpp b/main.cpp
+--- a/main.cpp	(revision 6a069f8ff0c00024389d903d935b36f8696f421a)
++++ b/main.cpp	(date 1684683272957)
+@@ -17,31 +17,8 @@
+ 	return tensor;
+ }
+ int main() {
+-	Tensor t1 = MakeMatrix(3, 4);
+-	Tensor t2 = MakeMatrix(3, 4);
+-	Tensor t3 = MakeMatrix(3, 4);
+-//	std::cout << t1 << std::endl;
+-//	std::cout << t2 << std::endl;
+-	BinaryExp t4 = t1+t2;
+-	BinaryExp t5 = t1*t2;
+-//	t2 = t4; 有问题
+-	t2 = t4+t5;
+-	std::cout << t2 << std::endl;
+-	Tensor::iterator it = {&t1, {}};
+-	std::cout << *(++it) << std::endl;
+-	std::cout << *(++it) << std::endl;
+-	std::cout << *t1.begin() << std::endl;
+-	std::cout << t1 << std::endl;
+-	auto v = t1.end();
+-	--v;
+-	*v = 10;
+-	std::cout << *(v) << std::endl; //有问题
++	Tensor a = MakeMatrix(3, 4);
++	std::cout << a << std::endl;
+ 
+-	Tensor x = t1.slice(0);
+-  	std::cout << x << std::endl;
+-  	auto x1 = t1.transpose(0, 1);
+-  	std::cout << x1 << std::endl;
+-  	auto x2 = t1.view({1, 12});
+-  	std::cout << x2 << std::endl;
+     return 0;
+ }
+Index: CMakeLists.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>cmake_minimum_required(VERSION 3.0)\r\nproject(Tensor)\r\nadd_executable(tensor\r\n        main.cpp\r\n        src/tensor.cpp\r\n        src/allocator.cpp\r\n        src/shape.cpp\r\n        src/storage.cpp\r\n        src/oper.cpp\r\n        src/tensor_impl.cpp\r\n        )\r\ntarget_include_directories(tensor PUBLIC include)
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	(revision 6a069f8ff0c00024389d903d935b36f8696f421a)
++++ b/CMakeLists.txt	(date 1684226762591)
+@@ -8,5 +8,5 @@
+         src/storage.cpp
+         src/oper.cpp
+         src/tensor_impl.cpp
+-        )
++        include/exception.h src/exception.cpp)
+ target_include_directories(tensor PUBLIC include)
+\ No newline at end of file
