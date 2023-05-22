@@ -3,7 +3,10 @@
 
 #include "shape.h"
 #include "exp.h"
+#include "storage.h"
+
 #include <cmath>
+#include <assert.h>
 
 namespace st {
     namespace op {
@@ -105,11 +108,12 @@ namespace st {
                 r0 = rhs->size()[rhs->n_dim()-2];
                 r1 = rhs->size()[rhs->n_dim()-1];
                 data_t res = 0;
-                for (int i = 0; i < l0; ++i) {
+                assert(l1 == r0);
+                for (int i = 0; i < l1; ++i) {
                     IndexArray lidx = idx;
                     IndexArray ridx = idx;
-                    lidx[lhs->n_dim()-1] = i;
-                    ridx[rhs->n_dim()-2] = i;
+                    lidx[idx.size()-1] = i;
+                    ridx[idx.size()-2] = i;
                     res += lhs->eval(lidx)*rhs->eval(ridx);
                 }
                 return res;
@@ -189,6 +193,14 @@ namespace st {
     [[nodiscard]] inline Exp<BinaryExp<op::Mul, LhsType, RhsType>> operator*(const Exp<LhsType>& lhs, const Exp<RhsType>& rhs) {
         return Exp<BinaryExp<op::Mul, LhsType, RhsType>>(
                 std::make_shared<BinaryExp<op::Mul, LhsType, RhsType>>(lhs.ptr(), rhs.ptr())
+        );
+    }
+
+    template<typename RhsType>
+    [[nodiscard]] inline Exp<BinaryExp<op::Mul, TensorImpl, RhsType>> operator*(data_t lhs_value, const Exp<RhsType>& rhs) {
+        auto lhs = Exp<TensorImpl>(std::make_shared<TensorImpl>(Storage(1, lhs_value), Shape({1})));
+        return Exp<BinaryExp<op::Mul, TensorImpl, RhsType>>(
+                std::make_shared<BinaryExp<op::Mul, TensorImpl, RhsType>>(lhs.ptr(), rhs.ptr())
         );
     }
 

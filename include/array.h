@@ -11,6 +11,7 @@
 #include <cstring>
 #include <algorithm>
 #include <iostream>
+#include <assert.h>
 
 namespace st {
     // unique_ptr array
@@ -46,7 +47,10 @@ namespace st {
         ~Array() = default;
 
         DType& operator[](index_t idx) { return d_ptr.get()[idx]; }
-        DType operator[](index_t idx) const { return d_ptr.get()[idx]; }
+        DType operator[](index_t idx) const {
+            assert(idx < size_);
+            return d_ptr.get()[idx];
+        }
 
         int size() const { return this->size_; }
         void memset(int value) const { std::memset(d_ptr.get(), value, size_*sizeof(DType));}

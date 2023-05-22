@@ -44,6 +44,9 @@ namespace st
 	{
 		return Tensor(impl_ptr->permute(dims));
 	}
+    Tensor Tensor::sum(int idx) const {
+        return Tensor(impl_ptr->sum(idx));
+    }
 	std::ostream& operator<<(std::ostream& out, const Tensor& tensor)
 	{
 		out << *tensor.impl_ptr;
@@ -301,15 +304,7 @@ namespace st
 	}
 	data_t Tensor::eval(IndexArray idx) const
 	{
-		int index = 0;
-		if (idx.size() >= impl_ptr->n_dim()) {
-			for (int i = idx.size() - n_dim(); i < idx.size(); ++i)
-				index += idx[i]*impl_ptr->stride()[i-(idx.size()-n_dim())];
-		} else {
-			for (int i = 0; i < idx.size(); ++i)
-				index += idx[i]*impl_ptr->stride()[i+(n_dim()-idx.size())];
-		}
-		return item(index);
+        return impl_ptr->eval(idx);
 	}
 
     data_t Tensor::sum() const {
@@ -325,5 +320,6 @@ namespace st
     Tensor Tensor::zeros(const st::Shape &shape) {
         return Tensor(Alloc::unique_construct<TensorImpl>(TensorMaker::zeros(shape)));
     }
+
 
 } // SimpleTensor

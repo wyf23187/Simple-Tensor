@@ -11,7 +11,7 @@ namespace st {
             _dim[idx] = other._dim[idx];
             ++idx;
         }
-        while (idx < other._dim.size()) {
+        while (idx+1 < other._dim.size()) {
             _dim[idx] = other._dim[idx+1];
             ++idx;
         }

@@ -42,21 +42,21 @@ namespace st {
         [[nodiscard]] data_t item(index_t idx) const;
 		[[nodiscard]] data_t& item(index_t idx);
         [[nodiscard]] data_t eval(IndexArray idx) const;
-        data_t sum() const;
+        [[nodiscard]] data_t sum() const;
 
         [[nodiscard]] Alloc::NonTrivalUniquePtr<TensorImpl> slice(index_t idx, index_t dim = 0) const;
         [[nodiscard]] Alloc::NonTrivalUniquePtr<TensorImpl> slice(index_t start_idx, index_t end_idx, index_t dim) const;
         [[nodiscard]] Alloc::NonTrivalUniquePtr<TensorImpl> transpose(index_t dim1, index_t dim2) const;
         [[nodiscard]] Alloc::NonTrivalUniquePtr<TensorImpl> view(const Shape& Shape) const;
         [[nodiscard]] Alloc::NonTrivalUniquePtr<TensorImpl> permute(std::initializer_list<index_t> dims) const;
+        Alloc::NonTrivalUniquePtr<TensorImpl> sum(int idx) const;
 
         // friend function
         friend std::ostream& operator<<(std::ostream& out, const TensorImpl& tensor);
 
         template<typename ImplType>
         TensorImpl& operator=(const ImplType& src) {
-            std::vector<index_t> dim_cnt(n_dim());
-            for (int i = 0; i < n_dim(); ++i) dim_cnt.push_back(0);
+            std::vector<index_t> dim_cnt(n_dim(), 0);
             int cnt = 0;
             while (cnt < d_size()) {
                 int idx = 0;

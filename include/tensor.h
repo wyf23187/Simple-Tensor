@@ -28,6 +28,7 @@ namespace st {
 			return *this;
 		}
 		Tensor& operator=(Tensor &&other) = default;
+        ~Tensor() = default;
 		explicit Tensor(Alloc::NonTrivalUniquePtr<TensorImpl>&& ptr);
         template<typename ImplType>
         Tensor(const Exp<ImplType>& impl) : Tensor(impl.ptr()->size())
@@ -56,6 +57,7 @@ namespace st {
 		[[nodiscard]] Tensor transpose(index_t dim1, index_t dim2) const;
 		[[nodiscard]] Tensor view(const Shape& Shape) const;
 		[[nodiscard]] Tensor permute(std::initializer_list<index_t> dims) const;
+        Tensor sum(int idx) const;
 
 		//friend function
 		friend std::ostream& operator<<(std::ostream& out, const Tensor& tensor);

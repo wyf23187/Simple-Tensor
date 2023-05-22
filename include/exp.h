@@ -37,6 +37,7 @@ namespace st {
         [[nodiscard]] index_t n_dim() const {
             return std::max(lhs_ptr->n_dim(), rhs_ptr->n_dim());
         }
+        ~BinaryExp() = default;
     private:
         std::shared_ptr<LhsType> lhs_ptr;
         std::shared_ptr<RhsType> rhs_ptr;
