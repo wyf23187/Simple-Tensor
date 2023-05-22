@@ -18,8 +18,7 @@ Tensor MakeMatrix(index_t n, index_t m) {
 }
 int main() {
 
-	const Tensor x = MakeMatrix(4, 4);
-	for(auto i = x.begin(); i != x.end(); ++i)
-		std::cout << *i << std::endl;
+	Tensor A = Tensor::zeros_like(MakeMatrix(3, 4));
+	std::cout << A << std::endl;
     return 0;
 }

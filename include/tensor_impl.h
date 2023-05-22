@@ -92,9 +92,6 @@ namespace st {
         static TensorImpl rand_like(const TensorImpl& tensor);
         static TensorImpl randn(const Shape& shape);
         static TensorImpl randn_like(const TensorImpl& tensor);
-        static TensorImpl linspace(index_t start, index_t end, index_t step);
-        static TensorImpl eye(index_t n);
-        static TensorImpl eye(index_t m, index_t n);
     };
 } // st
 
