@@ -1,80 +1,67 @@
 #ifndef TENSOR_EXP_H
 #define TENSOR_EXP_H
 
-#include "oper.h"
 #include "storage.h"
 
 namespace st {
     template<typename SubType>
     class Exp {
     public:
+        Exp(std::shared_ptr<SubType>&& ptr) : impl_ptr(std::move(ptr)) {}
         inline const SubType& self() const {
-            return *static_cast<const SubType*>(this);
+            return *impl_ptr;
         }
+        inline const std::shared_ptr<SubType>& ptr() const {
+            return impl_ptr;
+        }
+    protected:
+        std::shared_ptr<SubType> impl_ptr;
     };
 
     template<typename Op, typename LhsType, typename RhsType>
-    class BinaryExp: public Exp<BinaryExp<Op, LhsType, RhsType>> { // Binary Expression
+    class BinaryExp { // Binary Expression
     public:
         [[nodiscard]] inline data_t eval(IndexArray idx) const {
-            return Op::eval(idx, _lhs, _rhs);
+            return Op::eval(idx, lhs_ptr, rhs_ptr);
         }
-        BinaryExp(const LhsType& _lhs, const RhsType& _rhs): _lhs(_lhs), _rhs(_rhs) {}
+        BinaryExp(const std::shared_ptr<LhsType>& _lhs, const std::shared_ptr<RhsType> _rhs)
+            :lhs_ptr(_lhs), rhs_ptr(_rhs) {}
+        [[nodiscard]] Shape size() const {
+            return Op::size(lhs_ptr, rhs_ptr);
+        }
+        [[nodiscard]] index_t size(index_t idx) const {
+            if (idx >= lhs_ptr->ndim()) return rhs_ptr->size(idx);
+            if (idx >= rhs_ptr->ndim()) return lhs_ptr->size(idx);
+            return max(lhs_ptr->size(idx), rhs_ptr->size(idx));
+        }
+        [[nodiscard]] index_t n_dim() const {
+            return std::max(lhs_ptr->n_dim(), rhs_ptr->n_dim());
+        }
+        ~BinaryExp() = default;
     private:
-        const LhsType& _lhs;
-        const RhsType& _rhs;
+        std::shared_ptr<LhsType> lhs_ptr;
+        std::shared_ptr<RhsType> rhs_ptr;
     };
 
     template<typename Op, typename LhsType>
-    class UnaryExp: public Exp<UnaryExp<Op, LhsType>> { // Unary Expression
+    class UnaryExp { // Unary Expression
     public:
         [[nodiscard]] inline data_t eval(IndexArray idx) const {
-            return Op::eval(idx, _lhs);
+            return Op::eval(idx, lhs_ptr);
         }
-        UnaryExp(const LhsType& _lhs): _lhs(_lhs) {}
+        UnaryExp(const std::shared_ptr<LhsType>&& ptr): lhs_ptr(ptr) {}
+        [[nodiscard]] Shape& size() const {
+            return lhs_ptr->size();
+        }
+        [[nodiscard]] index_t size(index_t idx) const {
+            return lhs_ptr->size(idx);
+        }
+        [[nodiscard]] index_t n_dim() const {
+            return lhs_ptr->n_dim();
+        }
     private:
-        const LhsType& _lhs;
+        std::shared_ptr<LhsType> lhs_ptr;
     };
-
-    template<typename LhsType, typename RhsType>
-    [[nodiscard]] inline BinaryExp<op::Add<LhsType, RhsType>, LhsType, RhsType> operator+(const LhsType& lhs, const RhsType& rhs) {
-        return BinaryExp<op::Add<LhsType, RhsType>, LhsType, RhsType>(lhs, rhs);
-    }
-
-    template<typename LhsType, typename RhsType>
-    [[nodiscard]] inline BinaryExp<op::Sub<LhsType, RhsType>, LhsType, RhsType> operator-(const LhsType& lhs, const RhsType& rhs) {
-        return BinaryExp<op::Sub<LhsType, RhsType>, LhsType, RhsType>(lhs, rhs);
-    }
-
-    template<typename LhsType, typename RhsType>
-    [[nodiscard]] inline BinaryExp<op::Mul<LhsType, RhsType>, LhsType, RhsType> operator*(const LhsType& lhs, const RhsType& rhs) {
-        return BinaryExp<op::Mul<LhsType, RhsType>, LhsType, RhsType>(lhs, rhs);
-    }
-
-    template<typename LhsType, typename RhsType>
-    [[nodiscard]] inline BinaryExp<op::Div<LhsType, RhsType>, LhsType, RhsType> operator/(const LhsType& lhs, const RhsType& rhs) {
-        return BinaryExp<op::Div<LhsType, RhsType>, LhsType, RhsType>(lhs, rhs);
-    }
-
-    template<typename LhsType>
-    [[nodiscard]] inline UnaryExp<op::Neg<LhsType>, LhsType> operator-(const LhsType& lhs) {
-        return UnaryExp<op::Neg<LhsType>, LhsType>(lhs);
-    }
-
-    template<typename LhsType>
-    [[nodiscard]] inline UnaryExp<op::Sin<LhsType>, LhsType> sin(const LhsType& lhs) {
-        return UnaryExp<op::Sin<LhsType>, LhsType>(lhs);
-    }
-
-    template<typename LhsType>
-    [[nodiscard]] inline UnaryExp<op::Cos<LhsType>, LhsType> cos(const LhsType& lhs) {
-        return UnaryExp<op::Cos<LhsType>, LhsType>(lhs);
-    }
-
-    template<typename LhsType>
-    [[nodiscard]] inline UnaryExp<op::Tan<LhsType>, LhsType> tan(const LhsType& lhs) {
-        return UnaryExp<op::Tan<LhsType>, LhsType>(lhs);
-    }
-}// SimpleTensor
+}// st
 
 #endif //TENSOR_EXP_H

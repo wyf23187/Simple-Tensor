@@ -20,6 +20,10 @@ namespace st {
         TensorImpl(Storage&& Storage, Shape&& Shape, IndexArray&& stride);
         TensorImpl(const TensorImpl& other) = default;
         TensorImpl(TensorImpl&& other) = default;
+        template<typename ImplType>
+        explicit TensorImpl(const ImplType& impl) : TensorImpl(impl->size()) {
+            this->operator=(impl);
+        }
 
         // inline function
         [[nodiscard]] index_t n_dim() const { return _shape.n_dim(); }
@@ -28,8 +32,6 @@ namespace st {
         [[nodiscard]] const Shape& size() const { return _shape; }
         [[nodiscard]] index_t offset() const { return _storage.offset(); }
         [[nodiscard]] const IndexArray& stride() const { return _stride; }
-
-        // iterator
 
         // methods
         bool is_contiguous() const;
@@ -40,16 +42,40 @@ namespace st {
         [[nodiscard]] data_t item(index_t idx) const;
 		[[nodiscard]] data_t& item(index_t idx);
         [[nodiscard]] data_t eval(IndexArray idx) const;
+        [[nodiscard]] data_t sum() const;
 
         [[nodiscard]] Alloc::NonTrivalUniquePtr<TensorImpl> slice(index_t idx, index_t dim = 0) const;
         [[nodiscard]] Alloc::NonTrivalUniquePtr<TensorImpl> slice(index_t start_idx, index_t end_idx, index_t dim) const;
         [[nodiscard]] Alloc::NonTrivalUniquePtr<TensorImpl> transpose(index_t dim1, index_t dim2) const;
         [[nodiscard]] Alloc::NonTrivalUniquePtr<TensorImpl> view(const Shape& Shape) const;
         [[nodiscard]] Alloc::NonTrivalUniquePtr<TensorImpl> permute(std::initializer_list<index_t> dims) const;
+        Alloc::NonTrivalUniquePtr<TensorImpl> sum(int idx) const;
 
         // friend function
         friend std::ostream& operator<<(std::ostream& out, const TensorImpl& tensor);
 
+        template<typename ImplType>
+        TensorImpl& operator=(const ImplType& src) {
+            std::vector<index_t> dim_cnt(n_dim(), 0);
+            int cnt = 0;
+            while (cnt < d_size()) {
+                int idx = 0;
+                for (int i = 0; i < n_dim(); ++i) {
+                    idx += dim_cnt[i] * _stride[i];
+                }
+                item(idx) = src->eval(dim_cnt);
+                for (int i = n_dim()-1; i >= 0; --i) {
+                    if (dim_cnt[i]+1 < _shape[i]) {
+                        dim_cnt[i]++;
+                        break;
+                    } else {
+                        dim_cnt[i] = 0;
+                    }
+                }
+                ++cnt;
+            }
+            return *this;
+        }
 
     protected:
         Storage _storage;
@@ -57,6 +83,19 @@ namespace st {
         IndexArray _stride;
     };
 
-} // SimpleTensor
+    struct TensorMaker {
+        static TensorImpl ones(const Shape& shape);
+        static TensorImpl ones_like(const TensorImpl& tensor);
+        static TensorImpl zeros(const Shape& shape);
+        static TensorImpl zeros_like(const TensorImpl& tensor);
+        static TensorImpl rand(const Shape& shape);
+        static TensorImpl rand_like(const TensorImpl& tensor);
+        static TensorImpl randn(const Shape& shape);
+        static TensorImpl randn_like(const TensorImpl& tensor);
+        static TensorImpl linspace(index_t start, index_t end, index_t step);
+        static TensorImpl eye(index_t n);
+        static TensorImpl eye(index_t m, index_t n);
+    };
+} // st
 
 #endif //TENSOR_TENSOR_IMPL_H

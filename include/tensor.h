@@ -2,12 +2,15 @@
 #define TENSOR_TENSOR_H
 
 #include "tensor_impl.h"
+#include "exp.h"
+#include "oper.h"
 #include "allocator.h"
 
 namespace st {
 
-    class Tensor : public Exp<Tensor>
+    class Tensor : public Exp<TensorImpl>
 	{
+        using Exp<TensorImpl>::impl_ptr;
 	 public:
 		//constructors
 		Tensor(const Storage& storage, const Shape& shape, const IndexArray& stride);
@@ -15,31 +18,36 @@ namespace st {
 		explicit Tensor(const Shape& shape);
 		Tensor(const data_t* data, const Shape& shape);
 		Tensor(Storage&& storage, Shape&& shape, IndexArray&& stride);
-		Tensor(const Tensor& other) {
-			_impl = Alloc::unique_construct<TensorImpl>(*other._impl);
-		}
+		Tensor(const Tensor& other) = default;
 		Tensor(Tensor&& other) = default;
-		Tensor& operator=(const Tensor &other) {
+		Tensor& operator=(const Tensor &other)
+        {
 			if (this != &other) {
-				_impl = Alloc::unique_construct<TensorImpl>(*other._impl);
+				impl_ptr = Alloc::unique_construct<TensorImpl>(*other.impl_ptr);
 			}
 			return *this;
 		}
 		Tensor& operator=(Tensor &&other) = default;
+        ~Tensor() = default;
 		explicit Tensor(Alloc::NonTrivalUniquePtr<TensorImpl>&& ptr);
+        template<typename ImplType>
+        Tensor(const Exp<ImplType>& impl) : Tensor(impl.ptr()->size())
+        {
+            impl_ptr->operator=(impl.ptr());
+        }
 
 		//inline function
-		[[nodiscard]] index_t n_dim() const { return _impl->n_dim(); }
-		[[nodiscard]] index_t d_size() const { return  _impl->d_size(); }
-		[[nodiscard]] index_t size(index_t idx) const { return _impl->size(idx); }
-		[[nodiscard]] const Shape& size() const { return _impl->size(); }
-		[[nodiscard]] index_t offset() const { return _impl->offset(); }
-		[[nodiscard]] const IndexArray& stride() const { return _impl->stride(); }
+		[[nodiscard]] index_t n_dim() const { return impl_ptr->n_dim(); }
+		[[nodiscard]] index_t d_size() const { return  impl_ptr->d_size(); }
+		[[nodiscard]] index_t size(index_t idx) const { return impl_ptr->size(idx); }
+		[[nodiscard]] const Shape& size() const { return impl_ptr->size(); }
+		[[nodiscard]] index_t offset() const { return impl_ptr->offset(); }
+		[[nodiscard]] const IndexArray& stride() const { return impl_ptr->stride(); }
 
 		//methods
 		[[nodiscard]] bool is_contiguous();
 		[[nodiscard]] data_t item() const;
-		[[nodiscard]] data_t item(const int idx) const;
+		[[nodiscard]] data_t item(int idx) const;
 		[[nodiscard]] data_t eval(IndexArray idx) const;
 		data_t &operator[](std::initializer_list<index_t> dims);
 		data_t operator[](std::initializer_list<index_t> dims) const;
@@ -49,6 +57,7 @@ namespace st {
 		[[nodiscard]] Tensor transpose(index_t dim1, index_t dim2) const;
 		[[nodiscard]] Tensor view(const Shape& Shape) const;
 		[[nodiscard]] Tensor permute(std::initializer_list<index_t> dims) const;
+        Tensor sum(int idx) const;
 
 		//friend function
 		friend std::ostream& operator<<(std::ostream& out, const Tensor& tensor);
@@ -90,16 +99,12 @@ namespace st {
 			iterator(const iterator& other) = default;
 			iterator(iterator&& other) = default;
 			~iterator() = default;
-
 			iterator& operator=(const iterator& other) = default;
 			iterator& operator=(iterator&& other) = default;
-
 			iterator& operator++();
 			iterator operator++(int);
 			iterator& operator--();
 			iterator operator--(int);
-
-			index_t operator-(const iterator& other) const;
 			bool operator==(const iterator& other) const;
 			bool operator!=(const iterator& other) const;
 			reference operator*() const;
@@ -114,34 +119,23 @@ namespace st {
 		[[nodiscard]] iterator begin();
 		[[nodiscard]] iterator end();
 
-		template<typename Etype>
-		Tensor& operator=(const Exp<Etype>& src_){
-			const Etype& src = src_.self();
-			std::vector<index_t> dim_cnt;
-			for (int i = 0; i < n_dim(); ++i) dim_cnt.push_back(0);
-			int cnt = 0;
-			while (cnt < d_size()) {
-				int idx = 0;
-				for (int i = 0; i < n_dim(); ++i) {
-					idx += dim_cnt[i] * _impl->stride()[i];
-				}
-				_impl->item(idx) = src.eval(dim_cnt);
-				for (int i = n_dim()-1; i >= 0; --i) {
-					if (dim_cnt[i]+1 < size(i)) {
-						dim_cnt[i]++;
-						break;
-					} else {
-						dim_cnt[i] = 0;
-					}
-				}
-				++cnt;
-			}
+		template<typename ImplType>
+		Tensor& operator=(const Exp<ImplType>& src_){
+            impl_ptr->operator=(src_.ptr());
 			return *this;
 		}
-	 private:
-	 	Alloc::NonTrivalUniquePtr<TensorImpl> _impl;
+
+        static Tensor ones(const Shape& shape);
+        static Tensor ones_like(const Tensor& tensor);
+        static Tensor zeros(const Shape& shape);
+        static Tensor zeros_like(const Tensor& tensor);
+        static Tensor rand(const Shape& shape);
+        static Tensor rand_like(const Tensor& tensor);
+        static Tensor randn(const Shape& shape);
+        static Tensor randn_like(const Tensor& tensor);
+        data_t sum() const;
     };
 
-} // SimpleTensor
+} // st
 
 #endif //TENSOR_TENSOR_H

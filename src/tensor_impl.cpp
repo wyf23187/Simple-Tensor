@@ -3,6 +3,10 @@
 #include <memory>
 #include <cmath>
 #include <iomanip>
+#include <random>
+#include <ctime>
+
+#define debug printf("%d %s\n", __LINE__, __FUNCTION__)
 
 namespace st {
     // constructor
@@ -180,6 +184,42 @@ namespace st {
         return ptr;
     }
 
+    Alloc::NonTrivalUniquePtr<TensorImpl>
+    TensorImpl::sum(int idx) const {
+        Alloc::NonTrivalUniquePtr<TensorImpl> ptr;
+        ptr = Alloc::unique_construct<TensorImpl>(Shape(_shape, idx));
+        std::vector<index_t> idxs(_shape.n_dim(), 0);
+        std::vector<index_t> new_idxs(_shape.n_dim()-1, 0);
+        index_t cnt = 0;
+        while (cnt < d_size()) {
+            data_t res = 0;
+            for (int i = 0; i < _shape[idx]; ++i) {
+                idxs[idx] = i;
+                res += eval(idxs);
+            }
+            new_idxs.clear();
+            for (int i = 0; i < n_dim(); ++i) {
+                if (i == idx) continue;
+                new_idxs.push_back(idxs[i]);
+            }
+            index_t index = 0;
+            for (auto v : new_idxs) {
+                index += v*ptr->_stride[index];
+            }
+            ptr->item(index) = res;
+            for (int i = 0; i < n_dim(); ++i) {
+                if (i == idx) continue;
+                if (idxs[i] + 1 >= _shape[i]) idxs[i] = 0;
+                else {
+                    ++idxs[i];
+                    break;
+                }
+            }
+            cnt += _shape[idx];
+        }
+        return ptr;
+    }
+
     // friend function
     std::ostream& operator<<(std::ostream& out, const TensorImpl& tensor) {
         int max_width = 0;
@@ -223,4 +263,74 @@ namespace st {
         return out;
     }
 
-} // SimpleTensor
+    data_t TensorImpl::sum() const {
+        data_t res = 0;
+        std::vector<index_t> idx(n_dim(), 0);
+        for (int i = 0; i < d_size(); ++i) {
+            int cnt = 0;
+            res += eval(idx);
+            for (int j = 0; j < n_dim(); ++j) {
+                if (idx[j]+1 < size()[j]) {
+                    ++idx[j];
+                    break;
+                } else {
+                    idx[j] = 0;
+                    ++cnt;
+                }
+            }
+            if (cnt == n_dim()) break;
+        }
+        return res;
+    }
+
+    // TensorMaker
+    TensorImpl TensorMaker::ones(const Shape &shape) {
+        TensorImpl tensor(shape);
+        for (int i = 0; i < tensor.d_size(); ++i)
+            tensor.item(i) = 1;
+        return tensor;
+    }
+
+    TensorImpl TensorMaker::ones_like(const TensorImpl &tensor) {
+        return ones(tensor.size());
+    }
+
+    TensorImpl TensorMaker::zeros(const Shape &shape) {
+        TensorImpl tensor(shape);
+        for (int i = 0; i < tensor.d_size(); ++i)
+            tensor.item(i) = 0;
+        return tensor;
+    }
+
+    TensorImpl TensorMaker::zeros_like(const TensorImpl &tensor) {
+        return zeros(tensor.size());
+    }
+
+    TensorImpl TensorMaker::rand(const Shape &shape) {
+        std::random_device rd;
+        std::default_random_engine gen(rd());
+        std::uniform_real_distribution<data_t> dis(0, 1);
+        TensorImpl tensor(shape);
+        for (int i = 0; i < tensor.d_size(); ++i)
+            tensor.item(i) = dis(gen);
+        return tensor;
+    }
+
+    TensorImpl TensorMaker::rand_like(const TensorImpl &tensor) {
+        return rand(tensor.size());
+    }
+
+    TensorImpl TensorMaker::randn(const Shape &shape) {
+        std::random_device rd;
+        std::default_random_engine gen(rd());
+        std::normal_distribution<data_t> dis(0, 1);
+        TensorImpl tensor(shape);
+        for (int i = 0; i < tensor.d_size(); ++i)
+            tensor.item(i) = dis(gen);
+        return tensor;
+    }
+
+    TensorImpl TensorMaker::randn_like(const TensorImpl &tensor) {
+        return randn(tensor.size());
+    }
+} // st
