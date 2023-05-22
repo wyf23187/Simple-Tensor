@@ -20,7 +20,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="62a25626-b582-4d48-b7ac-c778b96a16cc" name="更改" comment="2023/05/09" />
+    <list default="true" id="62a25626-b582-4d48-b7ac-c778b96a16cc" name="更改" comment="2023/05/09">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -66,9 +68,9 @@
   }
 }</component>
   <component name="RunManager">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="tensor" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Tensor" TARGET_NAME="tensor" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Tensor" RUN_TARGET_NAME="tensor">
@@ -97,7 +99,8 @@
       <workItem from="1684293085244" duration="960000" />
       <workItem from="1684368735304" duration="839000" />
       <workItem from="1684582862813" duration="944000" />
-      <workItem from="1684680545096" duration="2760000" />
+      <workItem from="1684680545096" duration="3545000" />
+      <workItem from="1684762944922" duration="1000" />
     </task>
     <task id="LOCAL-00001" summary="2023/05/09">
       <created>1683618443137</created>
