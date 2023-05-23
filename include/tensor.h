@@ -109,7 +109,7 @@ namespace st {
 			bool operator!=(const iterator& other) const;
 			reference operator*() const;
 			pointer operator->() const;
-		 public:
+		 private:
 			std::vector<index_t> _idx;
 			Tensor* _tensor;
 		};
