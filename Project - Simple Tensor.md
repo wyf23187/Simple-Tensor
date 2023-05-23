@@ -41,7 +41,7 @@ with tf.Session() as sess:
 
 为了实现懒计算，使用奇异递归模板，用模板类的方式去实现这个效果。
 
-## 2.具体实现
+## 2. 具体操作的实现
 
 ### 2.1 Storage of data in Tensor
 
@@ -386,6 +386,139 @@ struct TensorMaker {
 };
 ```
 
+### 2.5 Iterator
+
+我们也实现了一个迭代器去访问 `Tensor` 里面的值。
+
+```cpp
+class iterator
+{
+    private:
+    using reference = data_t&;
+    using pointer = data_t*;
+    public:
+    iterator(Tensor* tensor,std::vector<index_t> idx);
+    iterator(const iterator& other) = default;
+    iterator(iterator&& other) = default;
+    ~iterator() = default;
+    iterator& operator=(const iterator& other) = default;
+    iterator& operator=(iterator&& other) = default;
+    iterator& operator++();
+    iterator operator++(int);
+    iterator& operator--();
+    iterator operator--(int);
+    bool operator==(const iterator& other) const;
+    bool operator!=(const iterator& other) const;
+    reference operator*() const;
+    pointer operator->() const;
+    private:
+    std::vector<index_t> _idx;
+    Tensor* _tensor;
+};
+class const_iterator
+{
+    private:
+    using const_reference = const data_t&;
+    using const_pointer = const data_t*;
+    std::vector<index_t> _idx;
+    const Tensor* _tensor;
+    public:
+    const_iterator(const Tensor* tensor,std::vector<index_t> idx);
+    const_iterator(const const_iterator& other) = default;
+    const_iterator(const_iterator&& other) = default;
+    ~const_iterator() = default;
+
+    const_iterator& operator=(const const_iterator& other) = default;
+    const_iterator& operator=(const_iterator&& other) = default;
+    const_iterator& operator++();
+    const_iterator operator++(int);
+    const_iterator& operator--();
+    const_iterator operator--(int);
+    index_t operator-(const const_iterator& other) const;
+    bool operator==(const const_iterator& other) const;
+    bool operator!=(const const_iterator& other) const;
+    const_reference operator*() const;
+    const_pointer operator->() const;
+};
+[[nodiscard]] const_iterator begin() const;
+[[nodiscard]] const_iterator end() const;
+[[nodiscard]] iterator begin();
+[[nodiscard]] iterator end();
+```
+
+用一个 `std::vector` 去存储坐标，迭代器的加减即为坐标的加减。
+
+### 2.6 Exceptions
+
+为了保证程序的正确运行，我们是实现了一个自己的 Exception 类，继承自 `std::exception`。具体如下：
+
+```cpp
+namespace err
+{
+    struct Error: public std::exception {
+        Error(const char* file, const char* func, unsigned int line);
+        const char* what() const noexcept;
+
+        static char msg_[300];
+        const char* file_;
+        const char* func_;
+        const unsigned int line_;
+    };
+}
+```
+
+同时使用宏定义，定义了一些错误检测的手段，具体如下：
+
+```cpp
+#define ERROR_LOCATION __FILE__, __func__, __LINE__
+#define THROW_ERROR(format, ...)	do {	\
+    std::sprintf(::st::err::Error::msg_, (format), ##__VA_ARGS__);    \
+    throw ::st::err::Error(ERROR_LOCATION);                           \
+	} while(0)
+// base assert macro
+#define CHECK_TRUE(expr, format, ...) \
+		if(!(expr)) THROW_ERROR((format), ##__VA_ARGS__)
+
+#define CHECK_NOT_NULL(ptr, format, ...) \
+		if(nullptr == (ptr)) THROW_ERROR((format), ##__VA_ARGS__)
+
+#define CHECK_EQUAL(x, y, format, ...) \
+		if((x) != (y)) THROW_ERROR((format), ##__VA_ARGS__)
+
+#define CHECK_IN_RANGE(x, lower, upper, format, ...) \
+		if((x) < (lower) || (x) >= (upper)) THROW_ERROR((format), ##__VA_ARGS__)
+
+#define CHECK_FLOAT_EQUAL(x, y, format, ...) \
+		if(std::fabs((x)-(y)) < 1e-4) THROW_ERROR((format), ##__VA_ARGS__)
+
+#define CHECK_INDEX_VALID(x, format, ...) \
+		if((x) > INDEX_MAX) THROW_ERROR((format), ##__VA_ARGS__)
+#define CHECK_EXP_SAME_SHAPE(e1_, e2_) do { \
+    auto& e1 = (e1_);  \
+    auto& e2 = (e2_);  \
+    CHECK_EQUAL(e1.ndim(), e2.ndim(),  \
+        "Expect the same dimensions, but got %dD and %dD",  \
+        e1.ndim(), e2.ndim());  \
+    for(index_t i = 0; i < e1.ndim(); ++i) \
+        CHECK_EQUAL(e1.size(i), e2.size(i),  \
+            "Expect the same size on the %d dimension, but got %d and %d.",  \
+            i, e1.size(i), e2.size(i));  \
+	} while(0)
+#define CHECK_EXP_BROADCAST(e1_, e2_) do { \
+    auto& e1 = (e1_);                          \
+    auto& e2 = (e2_);                          \
+    int i = e1->n_dim()-1;                   \
+    int j = e2->n_dim()-1;                   \
+    for (; i >= 0 && j >= 0; --i, --j) {   \
+        CHECK_TRUE(e1->size(i) == e2->size(j) || e1->size(i) == 1 || e2->size(j) == 1, \
+            "Broadcast error with %d in tensor a but %d in tensor b.", e1->size(i), e2->size(j) \
+        );                                     \
+    }                                      \
+    } while(0);
+```
+
+使用宏定义，可以更加方便的使用错误判断。
+
 ## 2. Our Highlights
 
 ### 2.1 Curiously Recurring Template Pattern(CRTP)
@@ -534,10 +667,10 @@ data_t Tensor::eval(IndexArray idx) const
 
 1. 支持std::unique_ptr,使用Alloc::TrivalUniquePtr封装,负责数组的内存管理。
 
-   ```c++
-   Array(index_t size) : 
-       size_(size), d_ptr(Alloc::unique_allocate<DType>(size_*sizeof(DType))) {}
-   ```
+```c++
+Array(index_t size) : 
+size_(size), d_ptr(Alloc::unique_allocate<DType>(size_*sizeof(DType))) {}
+```
 
 2. 支持初始化列表和std::vector初始化。例如:
 
@@ -601,8 +734,6 @@ template<typename T>
 class nontrivial_delete_handler {/*...*/};
 ```
 
-   
-
 2. 提供shared_allocate和unique_allocate方法分别分配共享内存和独占内存。返回相应的智能指针。
 
 ```c++
@@ -634,3 +765,25 @@ static Alloc& self();
 ```
 
 `array.h`中**Array**类模板与`allocator.h`中的**Alloc**类配合,实现了一个使用智能指针管理内存的动态数组,具有初始化、拷贝、移动等功能,是一种类型安全、异常安全的动态数组实现方式。
+
+## 3. 不足之处
+
+### 3.1 迭代器的实现
+
+从我们的初衷来讲，迭代器应该写在 `TensorImpl` 这个类里面，然而写到了 `Tensor` 类里。同时，这个迭代器不支持随机访问，所以访问功能性欠缺。
+
+### 3.2 Auto Grad
+
+由于时间所限，我们并没有实现自动求导这一在具体的机器学习中有重要应用的功能。在之后的版本中，我们打算尝试去实现这一点功能，以此来实现机器学习的更广泛的应用。
+
+## 4. 功能展示
+
+为了展示和测试我们的功能，我们利用 `gtest` 实现了测试和展示。
+
+同时，实现了一个简单的线性回归模型来对我们所写的内容进行检测。
+
+## 5. 分工安排
+
+本人（杨卓）负责写了内存分配部分、 `TensorImpl` 内部的具体实现、操作部分和测试部分；王研博负责了 `Tensor` 的外层封装、迭代器、错误检测部分。
+
+我们二人使用 git 进行工程开发。地址如下：[github](https://github.com/TbYangZ/Tensor)
