@@ -14,4 +14,8 @@ namespace st {
     Storage::Storage(const data_t* data, index_t size) : Storage(size) {
         std::memcpy(f_ptr, data, size*sizeof(data_t));
     }
+
+    Storage::Storage(const std::initializer_list<data_t> &list) : Storage(list.size()) {
+        std::memcpy(f_ptr, list.begin(), size_*sizeof(data_t));
+    }
 } // SimpleTensor

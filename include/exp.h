@@ -30,9 +30,9 @@ namespace st {
             return Op::size(lhs_ptr, rhs_ptr);
         }
         [[nodiscard]] index_t size(index_t idx) const {
-            if (idx >= lhs_ptr->ndim()) return rhs_ptr->size(idx);
-            if (idx >= rhs_ptr->ndim()) return lhs_ptr->size(idx);
-            return max(lhs_ptr->size(idx), rhs_ptr->size(idx));
+            if (idx >= lhs_ptr->n_dim()) return rhs_ptr->size(idx);
+            if (idx >= rhs_ptr->n_dim()) return lhs_ptr->size(idx);
+            return std::max(lhs_ptr->size(idx), rhs_ptr->size(idx));
         }
         [[nodiscard]] index_t n_dim() const {
             return std::max(lhs_ptr->n_dim(), rhs_ptr->n_dim());

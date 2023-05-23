@@ -11,6 +11,7 @@ namespace st {
         Storage(const Storage& other, index_t offset);
         Storage(index_t size, data_t value);
         Storage(const data_t *data, index_t size);
+        Storage(const std::initializer_list<data_t>& list);
 
         explicit Storage(const Storage& other) = default;
         explicit Storage(Storage&& other) = default;

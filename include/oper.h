@@ -1,9 +1,10 @@
-	#ifndef TENSOR_OPER_H
+#ifndef TENSOR_OPER_H
 #define TENSOR_OPER_H
 
 #include "shape.h"
 #include "exp.h"
 #include "storage.h"
+#include "exception.h"
 
 #include <cmath>
 #include <assert.h>
@@ -13,6 +14,7 @@ namespace st {
         struct Add {
             template<typename LhsType, typename RhsType>
             static data_t eval(IndexArray& idx, std::shared_ptr<LhsType> lhs, std::shared_ptr<RhsType> rhs) {
+                CHECK_EXP_BROADCAST(lhs, rhs);
                 return lhs->eval(idx)+rhs->eval(idx);
             }
             template<typename LhsType, typename RhsType>
@@ -33,6 +35,7 @@ namespace st {
         struct Sub {
             template<typename LhsType, typename RhsType>
             static data_t eval(IndexArray& idx, std::shared_ptr<LhsType> lhs, std::shared_ptr<RhsType> rhs) {
+                CHECK_EXP_BROADCAST(lhs, rhs);
                 return lhs->eval(idx)-rhs->eval(idx);
             }
             template<typename LhsType, typename RhsType>
@@ -43,6 +46,7 @@ namespace st {
         struct Mul {
             template<typename LhsType, typename RhsType>
             static data_t eval(IndexArray& idx, std::shared_ptr<LhsType> lhs, std::shared_ptr<RhsType> rhs) {
+                CHECK_EXP_BROADCAST(lhs, rhs);
                 return lhs->eval(idx)*rhs->eval(idx);
             }
             template<typename LhsType, typename RhsType>
@@ -53,6 +57,9 @@ namespace st {
         struct Div {
             template<typename LhsType, typename RhsType>
             static data_t eval(IndexArray& idx, std::shared_ptr<LhsType> lhs, std::shared_ptr<RhsType> rhs) {
+                CHECK_EXP_BROADCAST(lhs, rhs);
+                data_t r = rhs->eval(idx);
+                CHECK_FLOAT_EQUAL(r, 0, "divisor cannot be zero");
                 return lhs->eval(idx)/rhs->eval(idx);
             }
             template<typename LhsType, typename RhsType>
@@ -68,6 +75,8 @@ namespace st {
                 index_t l0 = ls[0], l1 = ls[1], r0 = rs[0], r1 = rs[1];
                 // default l1 == r0
                 // default lhs and rhs is 2-dimensional
+                CHECK_EQUAL(l1, r0,
+                            "mat1 and mat2 shapes cannot be multiplied (%dx%d and %dx%d)", l0, l1, r0, r1);
                 data_t res = 0;
                 for (index_t i = 0; i < l1; ++i) {
                     res += lhs->eval({idx[0], i})*rhs->eval({i, idx[1]});
@@ -87,6 +96,8 @@ namespace st {
                 index_t l0 = ls[0], l1 = ls[1], l2 = ls[2], r0 = rs[0], r1 = rs[1], r2 = rs[2];
                 // default l2 == r1
                 // default lhs and rhs is 3-dimensional
+                CHECK_EQUAL(l1, r0,
+                            "mat1 and mat2 shapes cannot be multiplied (%dx%d and %dx%d)", l0, l1, r0, r1);
                 data_t res = 0;
                 for (index_t i = 0; i < l2; ++i) {
                     res += lhs->eval({idx[0], idx[1], i})*rhs->eval({idx[0], i, idx[2]});
@@ -108,7 +119,8 @@ namespace st {
                 r0 = rhs->size()[rhs->n_dim()-2];
                 r1 = rhs->size()[rhs->n_dim()-1];
                 data_t res = 0;
-                assert(l1 == r0);
+                CHECK_EQUAL(l1, r0,
+                            "mat1 and mat2 shapes cannot be multiplied (%dx%d and %dx%d)", l0, l1, r0, r1);
                 for (int i = 0; i < l1; ++i) {
                     IndexArray lidx = idx;
                     IndexArray ridx = idx;

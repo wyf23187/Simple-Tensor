@@ -36,7 +36,7 @@ namespace st {
 		if((x) < (lower) || (x) >= (upper)) THROW_ERROR((format), ##__VA_ARGS__)
 
 	#define CHECK_FLOAT_EQUAL(x, y, format, ...) \
-		if(std::abs((x)-(y)) > 1e-4) THROW_ERROR((format), ##__VA_ARGS__)
+		if(std::fabs((x)-(y)) < 1e-4) THROW_ERROR((format), ##__VA_ARGS__)
 
 	#define CHECK_INDEX_VALID(x, format, ...) \
 		if((x) > INDEX_MAX) THROW_ERROR((format), ##__VA_ARGS__)
@@ -51,6 +51,17 @@ namespace st {
             "Expect the same size on the %d dimension, but got %d and %d.",  \
             i, e1.size(i), e2.size(i));  \
 	} while(0)
+    #define CHECK_EXP_BROADCAST(e1_, e2_) do { \
+    auto& e1 = (e1_);                          \
+    auto& e2 = (e2_);                          \
+    int i = e1->n_dim()-1;                   \
+    int j = e2->n_dim()-1;                   \
+    for (; i >= 0 && j >= 0; --i, --j) {   \
+        CHECK_TRUE(e1->size(i) == e2->size(j) || e1->size(i) == 1 || e2->size(j) == 1, \
+            "Broadcast error with %d in tensor a but %d in tensor b.", e1->size(i), e2->size(j) \
+        );                                     \
+    }                                      \
+    } while(0);
 	#else
 	#define CHECK_TRUE(expr, format, ...) {}
 	#define CHECK_NOT_NULL(ptr, format, ...) {}

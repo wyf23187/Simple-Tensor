@@ -58,15 +58,18 @@ namespace st
 	//iterator
 	Tensor::iterator::iterator(Tensor* tensor, std::vector<index_t> idx)
 	{
-		CHECK_IN_RANGE(idx.size(), 0, tensor->n_dim(), "Index out of range.");
+        CHECK_EQUAL(idx.size(), tensor->n_dim(), "Index size not match.");
 		_tensor = tensor;
-		for (auto i : idx)
-			_idx.push_back(i);
+        for (index_t i = 0; i < idx.size(); ++i) {
+            CHECK_IN_RANGE(i, 0, tensor->size()[i], "Index out of range.");
+            _idx.push_back(idx[i]);
+        }
 	}
 
 	Tensor::iterator& Tensor::iterator::operator++()
 	{
-		CHECK_IN_RANGE(_idx.size(), 0, _tensor->n_dim(), "Index out of range.");
+        CHECK_EQUAL(_idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_TRUE(*this != _tensor->end(), "Iterator out of range.");
 		int cnt = 0;
 		for (int i = (int)_idx.size()-1; i >= 0; --i)
 		{
@@ -93,7 +96,8 @@ namespace st
 
 	Tensor::iterator Tensor::iterator::operator++(int)
 	{
-		CHECK_IN_RANGE(_idx.size(), 0, _tensor->n_dim(), "Index out of range.");
+        CHECK_EQUAL(_idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_TRUE(*this != _tensor->end(), "Iterator out of range.");
 		iterator tmp = *this;
 		++*this;
 		return tmp;
@@ -101,6 +105,8 @@ namespace st
 
 	Tensor::iterator& Tensor::iterator::operator--()
 	{
+        CHECK_EQUAL(_idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_TRUE(*this != _tensor->begin(), "Iterator out of range.");
 		if (*this == _tensor->end())
 		{
 			for (int i = 0; i < _idx.size(); ++i)
@@ -126,7 +132,8 @@ namespace st
 
 	Tensor::iterator Tensor::iterator::operator--(int)
 	{
-		CHECK_IN_RANGE(_idx.size(), 0, _tensor->n_dim(), "Index out of range.");
+        CHECK_EQUAL(_idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_TRUE(*this != _tensor->begin(), "Iterator out of range.");
 		iterator tmp = *this;
 		--*this;
 		return tmp;
@@ -134,18 +141,24 @@ namespace st
 
 	bool Tensor::iterator::operator==(const iterator& other) const
 	{
-		CHECK_IN_RANGE(_idx.size(), 0, _tensor->n_dim(), "Index out of range.");
-		return _idx == other._idx && _tensor == other._tensor;
+        CHECK_EQUAL(_idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_EQUAL(other._idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_EQUAL(_tensor, other._tensor, "Tensor not match.");
+		return _idx == other._idx;
 	}
 
 	bool Tensor::iterator::operator!=(const iterator& other) const
 	{
+        CHECK_EQUAL(_idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_EQUAL(other._idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_EQUAL(_tensor, other._tensor, "Tensor not match.");
 		return !(*this == other);
 	}
 
 	Tensor::iterator::reference Tensor::iterator::operator*() const
 	{
-		CHECK_IN_RANGE(_idx.size(), 0, _tensor->n_dim(), "Index out of range.");
+        CHECK_EQUAL(_idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_TRUE(*this != _tensor->end(), "Iterator out of range.");
 		index_t idx = 0;
 		for (int i = 0; i < _idx.size(); ++i)
 		{
@@ -156,22 +169,26 @@ namespace st
 
 	Tensor::iterator::pointer Tensor::iterator::operator->() const
 	{
-		CHECK_IN_RANGE(_idx.size(), 0, _tensor->n_dim(), "Index out of range.");
+        CHECK_EQUAL(_idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_TRUE(*this != _tensor->end(), "Iterator out of range.");
 		return &**this;
 	}
 
 	//const_iterator
 	Tensor::const_iterator::const_iterator(const Tensor* tensor, std::vector<index_t> idx)
 	{
-		CHECK_IN_RANGE(idx.size(), 0, tensor->n_dim(), "Index out of range.");
+        CHECK_EQUAL(idx.size(), tensor->n_dim(), "Index size not match.");
 		_tensor = tensor;
-		for (auto i : idx)
-			_idx.push_back(i);
+		for (index_t i = 0; i < idx.size(); ++i) {
+            CHECK_IN_RANGE(i, 0, tensor->size()[i], "Index out of range.");
+            _idx.push_back(idx[i]);
+        }
 	}
 	Tensor::const_iterator& Tensor::const_iterator::operator++()
 	{
-		CHECK_IN_RANGE(_idx.size(), 0, _tensor->n_dim(), "Index out of range.");
-		int cnt = 0;
+        CHECK_EQUAL(_idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_TRUE(*this != _tensor->end(), "Iterator out of range.");
+        int cnt = 0;
 		for (int i = (int)_idx.size()-1; i >= 0; --i)
 		{
 			if (_idx[i]+1 < _tensor->size()[i])
@@ -197,8 +214,9 @@ namespace st
 
 	Tensor::const_iterator Tensor::const_iterator::operator++(int)
 	{
-		CHECK_IN_RANGE(_idx.size(), 0, _tensor->n_dim(), "Index out of range.");
-		const_iterator tmp = *this;
+        CHECK_EQUAL(_idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_TRUE(*this != _tensor->end(), "Iterator out of range.");
+        const_iterator tmp = *this;
 		++*this;
 		return tmp;
 	}
@@ -206,7 +224,8 @@ namespace st
 	Tensor::const_iterator& Tensor::const_iterator::operator--()
 	{
 		CHECK_IN_RANGE(_idx.size(), 0, _tensor->n_dim(), "Index out of range.");
-		if (*this == _tensor->end())
+        CHECK_TRUE(*this != _tensor->begin(), "Iterator out of range.");
+        if (*this == _tensor->end())
 		{
 			for (int i = 0; i < _idx.size(); ++i)
 			{
@@ -232,50 +251,33 @@ namespace st
 	Tensor::const_iterator Tensor::const_iterator::operator--(int)
 	{
 		CHECK_IN_RANGE(_idx.size(), 0, _tensor->n_dim(), "Index out of range.");
-		const_iterator tmp = *this;
+        CHECK_TRUE(*this != _tensor->begin(), "Iterator out of range.");
+        const_iterator tmp = *this;
 		--*this;
 		return tmp;
 	}
 
-	index_t Tensor::const_iterator::operator-(const const_iterator& other) const
-	{
-		CHECK_IN_RANGE(_idx.size(), 0, _tensor->n_dim(), "Index out of range.");
-		CHECK_TRUE(_tensor == other._tensor, "Tensor mismatch.");
-		index_t cnt = 0;
-		std::vector<index_t> idx = _idx;
-		while (idx != other._idx)
-		{
-			++cnt;
-			for (int i = (int)idx.size()-1; i >= 0; --i)
-			{
-				if (idx[i] > 0)
-				{
-					--idx[i];
-					break;
-				}
-				else
-				{
-					idx[i] = _tensor->size()[i]-1;
-				}
-			}
-		}
-		return cnt;
-	}
-
 	bool Tensor::const_iterator::operator==(const const_iterator& other) const
 	{
-		return _idx == other._idx && _tensor == other._tensor;
+        CHECK_EQUAL(_idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_EQUAL(other._idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_EQUAL(_tensor, other._tensor, "Tensor not match.");
+        return _idx == other._idx && _tensor == other._tensor;
 	}
 
 	bool Tensor::const_iterator::operator!=(const const_iterator& other) const
 	{
-		return !(*this == other);
+        CHECK_EQUAL(_idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_EQUAL(other._idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_EQUAL(_tensor, other._tensor, "Tensor not match.");
+        return !(*this == other);
 	}
 
 	Tensor::const_iterator::const_reference Tensor::const_iterator::operator*() const
 	{
-		CHECK_IN_RANGE(_idx.size(), 0, _tensor->n_dim(), "Index out of range.");
-		index_t idx = 0;
+        CHECK_EQUAL(_idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_TRUE(*this != _tensor->end(), "Iterator out of range.");
+        index_t idx = 0;
 		for (int i = 0; i < _idx.size(); ++i)
 		{
 			idx += _idx[i] * _tensor->impl_ptr->stride()[i];
@@ -285,7 +287,9 @@ namespace st
 
 	Tensor::const_iterator::const_pointer Tensor::const_iterator::operator->() const
 	{
-		return &**this;
+        CHECK_EQUAL(_idx.size(), _tensor->n_dim(), "Index size not match.");
+        CHECK_TRUE(*this != _tensor->end(), "Iterator out of range.");
+        return &**this;
 	}
 	//iterator_methods
 
@@ -318,6 +322,7 @@ namespace st
 		}
 		return const_iterator(this, idx);
 	}
+
 	data_t Tensor::eval(IndexArray idx) const
 	{
         return impl_ptr->eval(idx);
@@ -348,6 +353,11 @@ namespace st
 	{
 		return Tensor(Alloc::unique_construct<TensorImpl>(TensorMaker::rand_like(*(tensor.impl_ptr))));
 	}
-
+    Tensor Tensor::randn(const Shape &shape) {
+        return Tensor(Alloc::unique_construct<TensorImpl>(TensorMaker::randn(shape)));
+    }
+    Tensor Tensor::randn_like(const Tensor &tensor) {
+        return Tensor(Alloc::unique_construct<TensorImpl>(TensorMaker::randn_like(*(tensor.impl_ptr))));
+    }
 
 } // SimpleTensor

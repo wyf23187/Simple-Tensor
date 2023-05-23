@@ -42,12 +42,15 @@ namespace st {
             size_(size), d_ptr(Alloc::unique_allocate<DType>(size_*sizeof(DType))) {
             std::memcpy(this->d_ptr.get(), arr, size_*sizeof(DType));
         }
-        explicit Array(Array<DType>&& other) = default;
+        Array(Array<DType>&& other)  noexcept = default;
 
         ~Array() = default;
 
         DType& operator[](index_t idx) { return d_ptr.get()[idx]; }
         DType operator[](index_t idx) const {
+            if (idx >= size_) {
+                std::cout << idx << " " << size_ << std::endl;
+            }
             assert(idx < size_);
             return d_ptr.get()[idx];
         }

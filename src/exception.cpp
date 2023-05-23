@@ -2,8 +2,6 @@
 #include <sstream>
 #include <cstring>
 
-
-
 namespace st {
 	namespace err {
 

@@ -46,7 +46,8 @@ namespace st {
     // method
     bool TensorImpl::is_contiguous() const
 	{
-        for (int i = 0; i < n_dim()+1; ++i) {
+        for (int i = 0; i < n_dim()-1; ++i) {
+            if (_shape[i] == 1) continue;
             if (_stride[i] != _shape.sub_size(i+1)) return false;
         }
         if (_stride[n_dim()-1] != 1) return false;
@@ -58,6 +59,9 @@ namespace st {
 				"Invalid %zuD indices for %dD tensor", dims.size(), n_dim());
         index_t index = 0, dim = 0;
         for (auto v : dims) {
+            CHECK_IN_RANGE(v, 0, size(dim),
+                           "Index out of range (expected to be in range of [0, %d), but got %d)",
+                           size(dim), v);
             index += v*_stride[dim];
             ++dim;
         }
@@ -68,9 +72,14 @@ namespace st {
 			"Invalid %zuD indices for %dD tensor", dims.size(), n_dim());
         index_t index = 0, dim = 0;
         for (auto v : dims) {
+            std::cout << v << " ";
+            CHECK_IN_RANGE(v, 0, size(dim),
+                           "Index out of range (expected to be in range of [0, %d), but got %d)",
+                           size(dim), v);
             index += v*_stride[dim];
             ++dim;
         }
+        std::cout << std::endl;
         return _storage[index];
     }
 
@@ -128,6 +137,8 @@ namespace st {
 		CHECK_IN_RANGE(end_idx, 0, size(dim)+1,
 			"Range end %d is out of bound for dimension %d with size %d",
 			end_idx, dim, size(dim));
+        CHECK_TRUE(start_idx < end_idx,
+                   "slice() expects the start index must be smaller than the end index");
         Alloc::NonTrivalUniquePtr<TensorImpl> ptr;
         ptr = Alloc::unique_construct<TensorImpl>(
                 Storage(_storage, offset() + start_idx * _stride[dim]),
@@ -153,11 +164,11 @@ namespace st {
 
     Alloc::NonTrivalUniquePtr<TensorImpl>
     TensorImpl::view(const Shape &shape) const {
-			CHECK_TRUE(is_contiguous(),
-				"view() is only supported to contiguous tensor");
-			CHECK_EQUAL(shape.d_size(), shape.d_size(),
-				"Shape of size %d is invalid for input tensor with size %d",
-				shape.d_size(), shape.d_size());
+        CHECK_TRUE( !is_contiguous(),
+            "view() is only supported to contiguous tensor");
+        CHECK_EQUAL(shape.d_size(), shape.d_size(),
+            "Shape of size %d is invalid for input tensor with size %d",
+            shape.d_size(), shape.d_size());
         Alloc::NonTrivalUniquePtr<TensorImpl> ptr;
         ptr = Alloc::unique_construct<TensorImpl>(_storage, shape);
         for (int i = 0; i < shape.n_dim(); ++i) {
@@ -186,6 +197,9 @@ namespace st {
 
     Alloc::NonTrivalUniquePtr<TensorImpl>
     TensorImpl::sum(int idx) const {
+        CHECK_IN_RANGE(idx, 0, n_dim(),
+            "Dimension out of range (expected to be in range of [0, %d), but got %d)",
+            n_dim(), idx);
         Alloc::NonTrivalUniquePtr<TensorImpl> ptr;
         ptr = Alloc::unique_construct<TensorImpl>(Shape(_shape, idx));
         std::vector<index_t> idxs(_shape.n_dim(), 0);
@@ -203,8 +217,8 @@ namespace st {
                 new_idxs.push_back(idxs[i]);
             }
             index_t index = 0;
-            for (auto v : new_idxs) {
-                index += v*ptr->_stride[index];
+            for (index_t i = 0; i < new_idxs.size(); ++i) {
+                index += new_idxs[i] * ptr->_stride[i];
             }
             ptr->item(index) = res;
             for (int i = 0; i < n_dim(); ++i) {

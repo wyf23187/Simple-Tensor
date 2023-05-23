@@ -5,6 +5,7 @@
 #include "storage.h"
 #include "array.h"
 #include "allocator.h"
+#include "exception.h"
 #include "exp.h"
 
 #include <initializer_list>
@@ -28,7 +29,11 @@ namespace st {
         // inline function
         [[nodiscard]] index_t n_dim() const { return _shape.n_dim(); }
         [[nodiscard]] index_t d_size() const { return  _shape.d_size(); }
-        [[nodiscard]] index_t size(index_t idx) const { return _shape[idx]; }
+        [[nodiscard]] index_t size(index_t idx) const {
+            CHECK_IN_RANGE(idx, 0, n_dim(), "Index out of range (expected to be in range of [0, %d), but got %d)",
+                           n_dim(), idx);
+            return _shape[idx];
+        }
         [[nodiscard]] const Shape& size() const { return _shape; }
         [[nodiscard]] index_t offset() const { return _storage.offset(); }
         [[nodiscard]] const IndexArray& stride() const { return _stride; }
@@ -49,7 +54,7 @@ namespace st {
         [[nodiscard]] Alloc::NonTrivalUniquePtr<TensorImpl> transpose(index_t dim1, index_t dim2) const;
         [[nodiscard]] Alloc::NonTrivalUniquePtr<TensorImpl> view(const Shape& Shape) const;
         [[nodiscard]] Alloc::NonTrivalUniquePtr<TensorImpl> permute(std::initializer_list<index_t> dims) const;
-        Alloc::NonTrivalUniquePtr<TensorImpl> sum(int idx) const;
+        [[nodiscard]] Alloc::NonTrivalUniquePtr<TensorImpl> sum(int idx) const;
 
         // friend function
         friend std::ostream& operator<<(std::ostream& out, const TensorImpl& tensor);

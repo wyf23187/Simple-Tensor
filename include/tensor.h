@@ -53,11 +53,11 @@ namespace st {
 		data_t operator[](std::initializer_list<index_t> dims) const;
 
 		[[nodiscard]] Tensor slice(index_t idx, index_t dim = 0) const;
-		[[nodiscard]] Tensor slice(index_t start, index_t end, index_t dim = 0) const;
+		[[nodiscard]] Tensor slice(index_t start, index_t end, index_t dim) const;
 		[[nodiscard]] Tensor transpose(index_t dim1, index_t dim2) const;
 		[[nodiscard]] Tensor view(const Shape& Shape) const;
 		[[nodiscard]] Tensor permute(std::initializer_list<index_t> dims) const;
-        Tensor sum(int idx) const;
+        [[nodiscard]] Tensor sum(int idx) const;
 
 		//friend function
 		friend std::ostream& operator<<(std::ostream& out, const Tensor& tensor);
@@ -109,7 +109,7 @@ namespace st {
 			bool operator!=(const iterator& other) const;
 			reference operator*() const;
 			pointer operator->() const;
-		 private:
+		 public:
 			std::vector<index_t> _idx;
 			Tensor* _tensor;
 		};
@@ -133,7 +133,7 @@ namespace st {
         static Tensor rand_like(const Tensor& tensor);
         static Tensor randn(const Shape& shape);
         static Tensor randn_like(const Tensor& tensor);
-        data_t sum() const;
+        [[nodiscard]] data_t sum() const;
     };
 
 } // st
